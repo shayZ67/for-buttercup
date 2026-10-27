@@ -1448,6 +1448,368 @@
     bats.push(b);
   }
 
+  // fw-dhea — reddish-violet shells after the wish. One gathers into her name.
+  const FW_MAX = 640;
+  const fwPos = new Float32Array(FW_MAX * 3);
+  const fwCol = new Float32Array(FW_MAX * 3);
+  const fwAlpha = new Float32Array(FW_MAX);
+  const fwSize = new Float32Array(FW_MAX);
+  const fwGeo = new THREE.BufferGeometry();
+  fwGeo.setAttribute('position', new THREE.BufferAttribute(fwPos, 3));
+  fwGeo.setAttribute('color', new THREE.BufferAttribute(fwCol, 3));
+  fwGeo.setAttribute('aAlpha', new THREE.BufferAttribute(fwAlpha, 1));
+  fwGeo.setAttribute('aSize', new THREE.BufferAttribute(fwSize, 1));
+  fwGeo.attributes.position.setUsage(THREE.DynamicDrawUsage);
+  fwGeo.attributes.aAlpha.setUsage(THREE.DynamicDrawUsage);
+  fwGeo.attributes.aSize.setUsage(THREE.DynamicDrawUsage);
+  const sparkTex = canvasTex(64, 64, function (g, w, h) {
+    const img = g.createImageData(w, h);
+    const cx = (w - 1) / 2;
+    const cy = (h - 1) / 2;
+    const rad = w / 2;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const d = Math.hypot(x - cx, y - cy) / rad;
+        const a = d >= 1 ? 0 : Math.pow(1 - d, 2.6);
+        const i = (y * w + x) * 4;
+        img.data[i] = img.data[i + 1] = img.data[i + 2] = 255;
+        img.data[i + 3] = (a * 255) | 0;
+      }
+    }
+    g.putImageData(img, 0, 0);
+  });
+  sparkTex.colorSpace = THREE.LinearSRGBColorSpace;
+  sparkTex.generateMipmaps = false;
+  sparkTex.minFilter = THREE.LinearFilter;
+  sparkTex.magFilter = THREE.LinearFilter;
+  const fwMat = new THREE.ShaderMaterial({
+    uniforms: { uMap: { value: sparkTex } },
+    vertexShader: [
+      'attribute float aAlpha;',
+      'attribute float aSize;',
+      'attribute vec3 color;',
+      'varying vec3 vColor;',
+      'varying float vAlpha;',
+      'void main() {',
+      '  vColor = color;',
+      '  vAlpha = aAlpha;',
+      '  vec4 mv = modelViewMatrix * vec4(position, 1.0);',
+      '  gl_PointSize = clamp(aSize * (96.0 / max(1.0, -mv.z)), 0.0, 60.0);',
+      '  gl_Position = projectionMatrix * mv;',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'uniform sampler2D uMap;',
+      'varying vec3 vColor;',
+      'varying float vAlpha;',
+      'void main() {',
+      '  float a = texture2D(uMap, gl_PointCoord).a * vAlpha;',
+      '  if (a < 0.012) discard;',
+      '  gl_FragColor = vec4(vColor * a, a);',
+      '}'
+    ].join('\n'),
+    transparent: true,
+    depthWrite: false,
+    depthTest: true,
+    blending: THREE.CustomBlending,
+    blendEquation: THREE.AddEquation,
+    blendSrc: THREE.OneFactor,
+    blendDst: THREE.OneFactor,
+    toneMapped: false,
+    fog: false
+  });
+  const fwPoints = new THREE.Points(fwGeo, fwMat);
+  fwPoints.frustumCulled = false;
+  fwPoints.renderOrder = 4;
+  wishWorld.add(fwPoints);
+
+  const fwSparks = [];
+  const fwPops = [];
+  let fwT = -1;
+  let fwStarted = false;
+  let fwBuilt = false;
+  const FW_WINE = [[1, 0.28, 0.42], [0.82, 0.12, 0.38], [1, 0.46, 0.55]];
+  const FW_ROSE = [[1, 0.55, 0.68], [1, 0.38, 0.52], [0.95, 0.66, 0.76]];
+  const FW_VIOLET = [[0.7, 0.34, 1], [0.48, 0.16, 0.82], [0.82, 0.42, 1]];
+
+  function fwTint(pal) {
+    const c = pal[(Math.random() * pal.length) | 0];
+    return [
+      clamp(c[0] + (Math.random() - 0.5) * 0.06, 0, 1),
+      clamp(c[1] + (Math.random() - 0.5) * 0.06, 0, 1),
+      clamp(c[2] + (Math.random() - 0.5) * 0.08, 0, 1)
+    ];
+  }
+
+  function fwDir(speed, lift) {
+    let x = Math.random() * 2 - 1;
+    let y = Math.random() * 0.75 + lift;
+    let z = Math.random() * 2 - 1;
+    const m = Math.hypot(x, y, z) || 1;
+    return { x: x / m * speed, y: y / m * speed, z: z / m * speed };
+  }
+
+  function fwAlloc(s) {
+    if (fwSparks.length >= FW_MAX) return false;
+    const i = fwSparks.length;
+    fwSparks.push(s);
+    fwCol[i * 3] = s.r;
+    fwCol[i * 3 + 1] = s.g;
+    fwCol[i * 3 + 2] = s.b;
+    fwAlpha[i] = 0;
+    fwSize[i] = 0;
+    fwPos[i * 3] = s.x0;
+    fwPos[i * 3 + 1] = -30;
+    fwPos[i * 3 + 2] = s.z0;
+    return true;
+  }
+
+  function fwFace() {
+    const vibes = '168px "Great Vibes", cursive';
+    const script = '156px "Segoe Script", cursive';
+    const serif = 'italic 128px Georgia, "Palatino Linotype", serif';
+    try {
+      if (document.fonts && document.fonts.check('168px "Great Vibes"')) return vibes;
+      if (document.fonts && document.fonts.check('156px "Segoe Script"')) return script;
+    } catch (e) { /* system face below */ }
+    return serif;
+  }
+
+  function fwSampleName() {
+    const W = 720;
+    const H = 280;
+    const c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    const g = c.getContext('2d');
+    g.clearRect(0, 0, W, H);
+    g.font = fwFace();
+    g.fillStyle = '#fff';
+    g.strokeStyle = '#fff';
+    g.lineWidth = 8;
+    g.lineJoin = 'round';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.strokeText('Dhea', W / 2, H * 0.58);
+    g.fillText('Dhea', W / 2, H * 0.58);
+    const data = g.getImageData(0, 0, W, H).data;
+    const raw = [];
+    for (let y = 1; y < H; y += 2) {
+      for (let x = 1; x < W; x += 2) {
+        if (data[(y * W + x) * 4 + 3] > 120) raw.push(x, y);
+      }
+    }
+    if (raw.length < 20) return null;
+    let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+    for (let i = 0; i < raw.length; i += 2) {
+      const x = raw[i], y = raw[i + 1];
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+    const bw = Math.max(1, maxX - minX);
+    const bh = Math.max(1, maxY - minY);
+    const cap = reduced ? 140 : 320;
+    const pairs = raw.length / 2;
+    const stride = Math.max(1, Math.ceil(pairs / cap));
+    const pts = [];
+    for (let i = 0; i < pairs; i += stride) {
+      pts.push((raw[i * 2] - minX) / bw - 0.5);
+      pts.push(-((raw[i * 2 + 1] - minY) / bh - 0.5));
+    }
+    const wordW = 2.02;
+    return { pts: pts, w: wordW, h: Math.min(0.88, wordW * (bh / bw)) };
+  }
+
+  function fwShell(spec, pal, n, speed, life, size) {
+    const rise = reduced ? 0.01 : 0.72;
+    fwPops.push({ at: spec.t + rise, gain: spec.gain || 0.034, freq: spec.freq || 980, heard: false });
+    if (!reduced) {
+      for (let i = 0; i < 7; i++) {
+        const col = fwTint(pal);
+        fwAlloc({
+          kind: 1,
+          t0: spec.t,
+          rise: rise,
+          lag: i * 0.09,
+          x0: spec.x + (Math.random() - 0.5) * 0.04,
+          y0: 1.35,
+          z0: spec.z + 0.42,
+          x1: spec.x,
+          y1: spec.y,
+          z1: spec.z,
+          size: 2.5,
+          r: col[0], g: col[1], b: col[2],
+          seed: Math.random() * 20
+        });
+      }
+    }
+    for (let i = 0; i < n; i++) {
+      const d = fwDir(speed * (0.45 + Math.random() * 0.7), 0.2);
+      const col = fwTint(pal);
+      const core = i % 8 === 0;
+      fwAlloc({
+        kind: 2,
+        birth: spec.t + rise,
+        max: (reduced ? life * 0.55 : life) * (0.75 + Math.random() * 0.45),
+        x0: spec.x, y0: spec.y, z0: spec.z,
+        vx: d.x * (core ? 0.45 : 1),
+        vy: d.y * (core ? 0.45 : 1),
+        vz: d.z * (core ? 0.45 : 1),
+        size: size * (core ? 1.7 : 0.75 + Math.random() * 0.55),
+        r: col[0], g: col[1], b: col[2],
+        seed: Math.random() * 30
+      });
+    }
+  }
+
+  function fwBuild() {
+    if (fwBuilt) return;
+    fwBuilt = true;
+    const shells = [
+      { t: 0.28, x: -2.5, y: 2.62, z: -6.85, n: reduced ? 24 : 58, pal: FW_WINE, speed: 1.7, life: 2.45, size: 6.2, freq: 820 },
+      { t: 0.86, x: -2.75, y: 3.02, z: -7.15, n: reduced ? 0 : 40, pal: FW_ROSE, speed: 1.5, life: 2.2, size: 5.8, freq: 1100 },
+      { t: 2.45, x: -1.95, y: 2.38, z: -6.6, n: reduced ? 16 : 46, pal: FW_VIOLET, speed: 1.55, life: 2.4, size: 6.0, freq: 740 },
+      { t: 3.25, x: 3.15, y: 2.95, z: -6.55, n: reduced ? 0 : 28, pal: FW_WINE, speed: 1.35, life: 2.05, size: 5.2, freq: 1280 },
+      { t: 4.4, x: -2.2, y: 2.08, z: -6.4, n: reduced ? 0 : 24, pal: FW_ROSE, speed: 1.3, life: 2.0, size: 5.0, freq: 960 }
+    ];
+    shells.forEach(function (s) {
+      if (!s.n) return;
+      fwShell(s, s.pal, s.n, s.speed, s.life, s.size);
+    });
+    const name = { t: reduced ? 0.35 : 1.32, x: 2.45, y: 1.98, z: -6.0, gain: 0.05, freq: 1460 };
+    const rise = reduced ? 0.01 : 0.72;
+    fwShell(name, FW_ROSE, reduced ? 14 : 32, 1.25, 1.7, 4.4);
+    const glyph = fwSampleName();
+    const born = name.t + rise;
+    if (glyph) {
+      for (let i = 0; i < glyph.pts.length; i += 2) {
+        const ang = Math.random() * Math.PI * 2;
+        const rad = Math.random() * 0.46;
+        const k = Math.random();
+        const col = k < 0.22 ? fwTint(FW_WINE) : [1, 0.44 + k * 0.36, 0.58 + k * 0.28];
+        fwAlloc({
+          kind: 3,
+          birth: born,
+          max: reduced ? 2.3 : 4.55,
+          x0: name.x + Math.cos(ang) * rad,
+          y0: name.y + (Math.random() - 0.35) * rad,
+          z0: name.z + Math.sin(ang) * rad * 0.35,
+          x1: name.x + glyph.pts[i] * glyph.w,
+          y1: name.y + glyph.pts[i + 1] * glyph.h,
+          z1: name.z,
+          size: reduced ? 3.1 : 3.15,
+          r: col[0], g: col[1], b: col[2],
+          seed: Math.random() * 40
+        });
+      }
+    }
+    fwGeo.attributes.color.needsUpdate = true;
+    fwGeo.setDrawRange(0, fwSparks.length);
+  }
+
+  function fwBegin() {
+    if (fwStarted) return;
+    fwStarted = true;
+    const start = function () {
+      fwBuild();
+      fwT = 0;
+    };
+    if (document.fonts && document.fonts.load) {
+      const done = function () { start(); };
+      Promise.race([
+        document.fonts.load('168px "Great Vibes"'),
+        new Promise(function (r) { setTimeout(r, 450); })
+      ]).then(done, done);
+    } else start();
+  }
+
+  function fwPark(i) {
+    fwAlpha[i] = 0;
+    fwSize[i] = 0;
+    fwPos[i * 3 + 1] = -30;
+  }
+
+  function fwStep(dt, time) {
+    if (fwT < 0) return;
+    fwT += dt;
+    for (let p = 0; p < fwPops.length; p++) {
+      const pop = fwPops[p];
+      if (!pop.heard && fwT >= pop.at) {
+        pop.heard = true;
+        audio.burst(0.16, pop.freq, 0.9, pop.gain);
+      }
+    }
+    for (let i = 0; i < fwSparks.length; i++) {
+      const s = fwSparks[i];
+      let x = 0, y = -30, z = 0, a = 0, sz = 0;
+      if (s.kind === 1) {
+        const flight = (fwT - s.t0) / s.rise;
+        if (flight > s.lag && flight < 1.08) {
+          const along = clamp(flight - s.lag, 0, 1);
+          const e = easeOut(along);
+          x = s.x0 + (s.x1 - s.x0) * e;
+          y = s.y0 + (s.y1 - s.y0) * e;
+          z = s.z0 + (s.z1 - s.z0) * e;
+          const head = 1 - s.lag;
+          a = head * Math.sin(clamp(flight, 0, 1) * Math.PI) * 0.8;
+          sz = s.size * (0.7 + head * 0.5);
+        }
+      } else if (s.kind === 2) {
+        const age = fwT - s.birth;
+        if (age >= 0 && age <= s.max) {
+          const drag = 1.28;
+          const k = (1 - Math.exp(-drag * age)) / drag;
+          x = s.x0 + s.vx * k;
+          // y-up: gravity pulls toward -Y
+          y = s.y0 + s.vy * k - 0.2 * age * age;
+          z = s.z0 + s.vz * k;
+          const u = age / s.max;
+          const tw = 0.7 + 0.3 * Math.abs(Math.sin(time * 14 + s.seed));
+          a = Math.pow(1 - u, 1.2) * tw;
+          if (age < 0.05) a *= age / 0.05;
+          sz = s.size * (1 - u * 0.35);
+        }
+      } else if (s.kind === 3) {
+        const age = fwT - s.birth;
+        if (age >= 0 && age <= s.max) {
+          const gatherT = reduced ? 0.08 : 0.75;
+          const holdUntil = reduced ? 1.05 : 3.15;
+          const g = easeOut(clamp(age / gatherT, 0, 1));
+          x = s.x0 + (s.x1 - s.x0) * g;
+          y = s.y0 + (s.y1 - s.y0) * g;
+          z = s.z0 + (s.z1 - s.z0) * g;
+          let fade = 1;
+          if (age > holdUntil) {
+            const f = (age - holdUntil) / (s.max - holdUntil);
+            fade = (1 - f) * (1 - f);
+            y += f * 0.2;
+            x += Math.sin(s.seed * 6.2) * f * 0.05;
+          } else if (g > 0.9) {
+            x += Math.sin(time * 7 + s.seed * 17) * 0.012 + Math.sin(time * 10.4 + s.seed * 5) * 0.006;
+            y += Math.cos(time * 8.2 + s.seed * 11) * 0.01;
+          }
+          const tw = 0.74 + 0.26 * (0.5 + 0.5 * Math.sin(time * 9 + s.seed * 13));
+          a = tw * fade;
+          if (age < 0.1) a *= age / 0.1;
+          sz = s.size * (1.45 - 0.45 * g);
+        }
+      }
+      if (a <= 0.001) fwPark(i);
+      else {
+        fwPos[i * 3] = x;
+        fwPos[i * 3 + 1] = y;
+        fwPos[i * 3 + 2] = z;
+        fwAlpha[i] = a;
+        fwSize[i] = sz;
+      }
+    }
+    fwGeo.attributes.position.needsUpdate = true;
+    fwGeo.attributes.aAlpha.needsUpdate = true;
+    fwGeo.attributes.aSize.needsUpdate = true;
+  }
+
   const petals = [];
   const fallMat = petalMat.clone();
   function spawnPetal() {
@@ -1654,6 +2016,7 @@
     });
     // store so the loop can read it
     celebrate.moonTween = moonTween;
+    fwBegin();
     setTimeout(function () { afterEl.classList.add('show'); }, reduced ? 200 : 700);
   }
 
@@ -1955,6 +2318,7 @@
           b.rotateZ(Math.sin(t * 5.5) * 0.2);
         });
       }
+      fwStep(dt, time);
     }
 
     renderer.render(scene, camera);

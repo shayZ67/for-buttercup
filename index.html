@@ -44,14 +44,21 @@
   }
   #vignette {
     z-index: 2;
-    background: radial-gradient(ellipse at center, transparent 42%, rgba(0,0,0,0.55) 78%, rgba(0,0,0,0.86) 100%);
+    background:
+      radial-gradient(ellipse at 50% 48%, rgba(255, 186, 120, 0.075), transparent 34%),
+      radial-gradient(ellipse at center, transparent 46%, rgba(48, 12, 18, 0.4) 74%, rgba(0, 0, 0, 0.8) 100%);
+  }
+  body.sanctum #vignette {
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(186, 206, 232, 0.1), transparent 32%),
+      radial-gradient(ellipse at center, transparent 48%, rgba(8, 12, 28, 0.42) 76%, rgba(0, 0, 0, 0.8) 100%);
   }
   #grain {
     z-index: 3;
-    opacity: 0.16;
+    opacity: 0.2;
     mix-blend-mode: overlay;
-    background-size: 180px 180px;
-    animation: grain 0.85s steps(2) infinite;
+    background-size: 220px 220px;
+    animation: grain 2.8s steps(3) infinite;
   }
   #shade {
     z-index: 6;
@@ -63,12 +70,12 @@
   #flash {
     z-index: 40;
     opacity: 0;
-    background: radial-gradient(circle at center, #fff8ee 0%, #f0c9a0 28%, #6a1830 62%, #070308 100%);
+    background: radial-gradient(circle at center, rgba(255, 246, 232, 0.9) 0%, rgba(232, 186, 148, 0.62) 32%, rgba(74, 16, 36, 0.38) 66%, rgba(7, 3, 8, 0) 100%);
   }
-  #flash.go { animation: flash 1.25s ease forwards; }
+  #flash.go { animation: flash 1.75s cubic-bezier(0.45, 0, 0.2, 1) forwards; }
   @keyframes flash {
     0% { opacity: 0; }
-    32% { opacity: 1; }
+    30% { opacity: 1; }
     100% { opacity: 0; }
   }
   @keyframes grain {
@@ -196,8 +203,8 @@
     text-align: center;
     color: var(--wine);
     font-size: clamp(2.15rem, 7.5vw, 3.05rem);
-    line-height: 0.85;
-    margin: 0 0 0.2rem;
+    line-height: 1.08;
+    margin: 0.06rem 0 0.32rem;
   }
   .greet {
     font-family: Cinzel, Palatino, serif;
@@ -205,7 +212,8 @@
     font-size: clamp(1.05rem, 2.4vw, 1.35rem);
     letter-spacing: 0.08em;
     text-align: center;
-    margin: 0 0 0.35rem;
+    line-height: 1.25;
+    margin: 0 0 0.42rem;
     color: #4a2b24;
   }
   .greet em {
@@ -215,7 +223,9 @@
     letter-spacing: 0;
     color: var(--wine);
     display: inline-block;
-    transform: translateY(4px);
+    margin-left: 0.08em;
+    line-height: 1;
+    transform: translateY(0.06em);
   }
   .rule {
     width: 72px;
@@ -319,7 +329,7 @@
     margin: 0.1rem 0 0;
     line-height: 0.9;
     color: #f7efe2;
-    text-shadow: 0 10px 40px rgba(0,0,0,0.55);
+    text-shadow: 0 12px 36px rgba(0,0,0,0.62), 0 2px 12px rgba(4, 8, 18, 0.45);
   }
   .ringwrap {
     width: 86px;
@@ -423,8 +433,8 @@
     #letter { padding-top: 0.4rem; padding-bottom: 0.4rem; }
     .sheet { padding: 0.65rem 0.95rem 0.55rem; }
     .waxdot { width: 32px; height: 32px; margin-bottom: 0.25rem; font-size: 1.15rem; }
-    .dear { font-size: 1.7rem; margin-bottom: 0; }
-    .greet { margin-bottom: 0.1rem; font-size: 0.92rem; }
+    .dear { font-size: 1.7rem; margin: 0; line-height: 0.95; }
+    .greet { margin: 0 0 0.1rem; font-size: 0.92rem; line-height: 1.1; }
     .rule { margin: 0.28rem auto 0.4rem; }
     .sheet .body, .sheet .ps { margin-bottom: 0.32rem; line-height: 1.32; font-size: 1.02rem; }
     .sheet .ps { margin-top: 0.4rem; }
@@ -547,6 +557,9 @@
     return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
   }
   function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
 
   function tween(obj, to, dur, opts) {
     opts = opts || {};
@@ -878,7 +891,7 @@
         'void main() {',
         '  vUv = uv;',
         '  vec3 p = position;',
-        '  float flick = sin(uTime * 16.0 + position.y * 18.0) * 0.02 * uv.y;',
+        '  float flick = sin(uTime * 6.2 + position.y * 8.0) * 0.016 * uv.y;',
         '  p.x += flick + uBlow * uv.y * 0.22;',
         '  p.y *= mix(1.0, 0.72, uBlow);',
         '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
@@ -891,11 +904,11 @@
         'uniform float uOut;',
         'void main() {',
         '  vec2 uv = vUv;',
-        '  float wobble = sin(uv.y * 10.0 + uTime * 13.0) * 0.04 * uv.y;',
-        '  float x = (uv.x - 0.5 + wobble) * (1.2 + uv.y);',
-        '  float side = smoothstep(0.48, 0.02, abs(x));',
-        '  float base = smoothstep(0.0, 0.1, uv.y);',
-        '  float tip = smoothstep(1.05, 0.28, uv.y);',
+        '  float wobble = sin(uv.y * 7.0 + uTime * 5.2) * 0.032 * uv.y;',
+        '  float x = (uv.x - 0.5 + wobble) * (1.15 + uv.y * 0.85);',
+        '  float side = smoothstep(0.56, 0.0, abs(x));',
+        '  float base = smoothstep(0.0, 0.12, uv.y);',
+        '  float tip = smoothstep(1.08, 0.2, uv.y);',
         '  float core = smoothstep(0.18, 0.0, abs(x)) * smoothstep(0.9, 0.2, uv.y);',
         '  float alpha = side * base * tip * (1.0 - uOut) * mix(1.0, 0.35, uBlow);',
         '  vec3 col = mix(vec3(0.85, 0.16, 0.03), vec3(1.0, 0.62, 0.16), smoothstep(0.0, 0.5, uv.y));',
@@ -908,8 +921,8 @@
   }
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x070308);
-  scene.fog = new THREE.FogExp2(0x10060a, 0.045);
+  scene.background = new THREE.Color(0x10080c);
+  scene.fog = new THREE.FogExp2(0x16090e, 0.052);
 
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 80);
   camera.position.set(0, 2.7, 6.1);
@@ -923,7 +936,7 @@
   if ('useLegacyLights' in renderer) renderer.useLegacyLights = true;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.12;
+  renderer.toneMappingExposure = 1.08;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, fine ? 1.75 : 1.35));
@@ -937,12 +950,17 @@
   const look = new THREE.Vector3(0, 0.16, 0);
   const lookSm = look.clone();
   const ndc = { x: 0, y: 0 };
+  const camAnchor = new THREE.Vector3(0, 2.7, 6.1);
+  const camGoal = new THREE.Vector3();
+  let arriveT = 0;
+  let arriveDur = reduced ? 0.4 : 2.75;
+  let arriving = true;
 
-  scene.add(new THREE.AmbientLight(0x3a242c, 0.42));
-  const hemi = new THREE.HemisphereLight(0x6a7894, 0x2a1016, 0.38);
+  scene.add(new THREE.AmbientLight(0x2c1814, 0.3));
+  const hemi = new THREE.HemisphereLight(0x4a4038, 0x2a1210, 0.22);
   scene.add(hemi);
 
-  const spot = new THREE.SpotLight(0xffe2bf, 2.35, 18, 0.62, 0.78, 1);
+  const spot = new THREE.SpotLight(0xffd0a6, 2.6, 16, 0.58, 0.86, 1.15);
   spot.position.set(-0.4, 5.4, 2.5);
   spot.castShadow = true;
   spot.shadow.mapSize.set(1024, 1024);
@@ -953,12 +971,12 @@
   scene.add(spot);
   scene.add(spot.target);
 
-  const moonLight = new THREE.DirectionalLight(0xc5d2ea, 0);
-  moonLight.position.set(-4, 8, -6);
+  const moonLight = new THREE.DirectionalLight(0xb7c7e8, 0);
+  moonLight.position.set(-3.5, 7.2, -5.5);
   scene.add(moonLight);
 
-  const studyLightL = new THREE.PointLight(0xffa45a, 0.85, 4.5, 2);
-  const studyLightR = new THREE.PointLight(0xffa45a, 0.75, 4.2, 2);
+  const studyLightL = new THREE.PointLight(0xffb06a, 1.05, 5.2, 1.7);
+  const studyLightR = new THREE.PointLight(0xff9850, 0.95, 4.8, 1.7);
   const cakeLight = new THREE.PointLight(0xffb068, 0, 5.5, 2);
   scene.add(studyLightL, studyLightR, cakeLight);
 
@@ -1012,6 +1030,27 @@
   const wishWorld = new THREE.Group();
   wishWorld.visible = false;
   scene.add(deskWorld, wishWorld);
+
+  const studySky = new THREE.Mesh(
+    new THREE.SphereGeometry(36, 24, 16),
+    new THREE.ShaderMaterial({
+      side: THREE.BackSide,
+      depthWrite: false,
+      toneMapped: false,
+      vertexShader: 'varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+      fragmentShader: [
+        'varying vec3 vP;',
+        'void main(){',
+        '  float h = normalize(vP).y;',
+        '  vec3 top = vec3(0.015, 0.007, 0.01);',
+        '  vec3 hor = vec3(0.075, 0.03, 0.026);',
+        '  float g = smoothstep(0.42, -0.2, h);',
+        '  gl_FragColor = vec4(mix(top, hor, g), 1.0);',
+        '}'
+      ].join('\n')
+    })
+  );
+  deskWorld.add(studySky);
 
   const table = new THREE.Mesh(new THREE.CylinderGeometry(3.25, 3.25, 0.1, 72), woodMat);
   table.position.y = -0.05;
@@ -1220,7 +1259,7 @@
     deskWorld.add(p);
   }
 
-  const dustCount = fine ? 80 : 40;
+  const dustCount = fine ? 64 : 26;
   const dustPos = new Float32Array(dustCount * 3);
   for (let i = 0; i < dustCount; i++) {
     dustPos[i * 3] = (Math.random() - 0.5) * 3.4;
@@ -1338,10 +1377,12 @@
         'uniform vec3 uMoon;',
         'void main(){',
         '  vec3 n = normalize(vP);',
-        '  float h = smoothstep(-0.15, 0.55, n.y);',
-        '  vec3 col = mix(vec3(0.11, 0.025, 0.045), vec3(0.012, 0.014, 0.03), h);',
-        '  float m = pow(max(dot(n, uMoon), 0.0), 10.0);',
-        '  col += vec3(0.22, 0.24, 0.32) * m;',
+        '  float h = smoothstep(-0.28, 0.64, n.y);',
+        '  vec3 col = mix(vec3(0.085, 0.018, 0.038), vec3(0.007, 0.011, 0.026), h);',
+        '  float m = pow(max(dot(n, uMoon), 0.0), 12.0);',
+        '  float edge = pow(max(dot(n, uMoon), 0.0), 6.0);',
+        '  col += vec3(0.16, 0.18, 0.26) * m;',
+        '  col += vec3(0.04, 0.05, 0.08) * edge;',
         '  gl_FragColor = vec4(col, 1.0);',
         '}'
       ].join('\n')
@@ -1355,6 +1396,7 @@
   );
   moon.position.set(-0.35, 3.15, -8);
   moon.scale.setScalar(1.35);
+  moon.material.fog = false;
   wishWorld.add(moon);
 
   function tower(x, z, h, r) {
@@ -1415,14 +1457,15 @@
     petals.push(m);
   }
   function resetPetal(m, burst) {
-    m.position.set((Math.random() - 0.5) * (burst ? 2.2 : 4.2), burst ? 0.9 + Math.random() * 1.4 : 1.2 + Math.random() * 2.8, (Math.random() - 0.5) * 3.2);
-    m.userData.vy = -(0.18 + Math.random() * 0.35);
-    m.userData.spin = Math.random() * 2;
-    m.userData.phase = Math.random() * 6;
-    m.userData.amp = 0.18 + Math.random() * 0.35;
-    m.rotation.set(Math.random(), Math.random(), Math.random());
+    const spread = burst ? 1.5 : 2.8;
+    m.position.set((Math.random() - 0.5) * spread, burst ? 1.05 + Math.random() * 1.5 : 1.5 + Math.random() * 2.2, -0.15 - Math.random() * 2.2);
+    m.userData.vy = -(0.07 + Math.random() * 0.14);
+    m.userData.spin = 0.2 + Math.random() * 0.55;
+    m.userData.phase = Math.random() * 6.28;
+    m.userData.amp = 0.08 + Math.random() * 0.16;
+    m.rotation.set(Math.random() * 0.6, Math.random(), Math.random());
   }
-  for (let i = 0; i < (fine ? 36 : 20); i++) spawnPetal();
+  for (let i = 0; i < (fine ? 28 : 14); i++) spawnPetal();
   for (let i = 0; i < 7; i++) {
     const p = new THREE.Mesh(petalGeo, petalMat);
     p.rotation.x = -Math.PI / 2 + 0.2;
@@ -1438,7 +1481,7 @@
     map: smokeTex,
     transparent: true,
     depthWrite: false,
-    toneMapped: false,
+    toneMapped: true,
     opacity: 0
   });
 
@@ -1482,14 +1525,14 @@
     const origin = new THREE.Vector3();
     seal.getWorldPosition(origin);
     for (let i = 0; i < 8; i++) {
-      const s = new THREE.Mesh(new THREE.TetrahedronGeometry(0.025 + Math.random() * 0.03), waxMat);
+      const s = new THREE.Mesh(new THREE.TetrahedronGeometry(0.02 + Math.random() * 0.028), waxMat);
       deskWorld.worldToLocal(s.position.copy(origin));
-      s.userData.v = new THREE.Vector3((Math.random() - 0.5) * 1.4, 0.7 + Math.random(), (Math.random() - 0.5) * 1.4);
-      s.userData.life = 1.15;
+      s.userData.v = new THREE.Vector3((Math.random() - 0.5) * 0.62, 0.28 + Math.random() * 0.42, (Math.random() - 0.5) * 0.62);
+      s.userData.life = 1.7;
       deskWorld.add(s);
       shards.push(s);
     }
-    tween(seal.scale, { x: 0.86, y: 0.86, z: 0.86 }, 0.28, { ease: easeOut });
+    tween(seal.scale, { x: 0.9, y: 0.9, z: 0.86 }, 0.55, { ease: easeOut });
   }
 
   function openFully() {
@@ -1498,7 +1541,7 @@
     crackOnce();
     phase = 'opening';
     setHint('');
-    tween(flapState, { a: 1 }, 1.28, { ease: easeInOut, onDone: raiseLetter });
+    tween(flapState, { a: 1 }, 1.5, { ease: easeInOutCubic, onDone: raiseLetter });
   }
 
   let paperPlayed = false;
@@ -1508,10 +1551,10 @@
       paperPlayed = true;
       audio.paper();
     }
-    tween(letterMesh.position, { y: 1.08, z: 0.42 }, 1.3, { ease: easeInOut });
-    tween(letterMesh.rotation, { x: 0.82 }, 1.3, { ease: easeInOut, onDone: function () { showLetter(false); } });
-    tween(letterMesh.scale, { x: 1.08, y: 1.08, z: 1.08 }, 1.3, { ease: easeOut });
-    tween(letterMat, { opacity: 0 }, 0.55, { delay: 0.85 });
+    tween(letterMesh.position, { y: 1.08, z: 0.42 }, 1.55, { ease: easeInOutCubic });
+    tween(letterMesh.rotation, { x: 0.82 }, 1.55, { ease: easeInOutCubic, onDone: function () { showLetter(false); } });
+    tween(letterMesh.scale, { x: 1.08, y: 1.08, z: 1.08 }, 1.55, { ease: easeOut });
+    tween(letterMat, { opacity: 0 }, 0.7, { delay: 1.05 });
   }
 
   function showLetter(reread) {
@@ -1524,6 +1567,7 @@
     shade.classList.add('on');
     wishUI.classList.remove('show');
     hint.classList.remove('show');
+    cur.classList.add('gone');
   }
 
   function teleport() {
@@ -1537,7 +1581,7 @@
     flash.classList.remove('go');
     void flash.offsetWidth;
     flash.classList.add('go');
-    setTimeout(cutToWish, reduced ? 280 : 420);
+    setTimeout(cutToWish, reduced ? 280 : 520);
   }
 
   function cutToWish() {
@@ -1547,19 +1591,34 @@
     wishWorld.visible = true;
     studyLightL.intensity = 0;
     studyLightR.intensity = 0;
-    cakeLight.intensity = 1.15;
-    moonLight.intensity = 0.55;
+    cakeLight.intensity = 1.2;
+    moonLight.color.set(0xb7c7e8);
+    moonLight.position.set(-3.5, 7.2, -5.5);
+    moonLight.intensity = 0.62;
     spot.position.set(0.2, 5.6, 2.4);
     spot.target.position.set(0, 0.6, 0);
-    spot.intensity = 1.15;
+    spot.color.set(0xc5d2e4);
+    spot.intensity = 0.38;
+    scene.background.set(0x070910);
+    scene.fog.color.set(0x10141c);
+    scene.fog.density = 0.04;
+    hemi.color.set(0x93a8c4);
+    hemi.groundColor.set(0x160e14);
+    hemi.intensity = 0.4;
+    document.body.classList.add('sanctum');
     shot = shots.sanctum;
     applyFraming();
-    camera.position.copy(framed);
-    camera.position.y += 0.4;
-    camera.position.z += 0.7;
-    scene.fog.density = 0.032;
+    camAnchor.copy(framed);
+    camAnchor.y += 0.5;
+    camAnchor.z += 0.92;
+    camera.position.copy(camAnchor);
+    look.set(shot.lx, shot.ly, shot.lz);
+    lookSm.copy(look);
+    arriveT = 0;
+    arriveDur = reduced ? 0.3 : 2.2;
+    arriving = true;
     phase = 'wish';
-    setTimeout(function () { if (phase === 'wish') wishUI.classList.add('show'); }, reduced ? 80 : 420);
+    setTimeout(function () { if (phase === 'wish') wishUI.classList.add('show'); }, reduced ? 80 : 1100);
   }
 
   function celebrate() {
@@ -1575,20 +1634,23 @@
     wishCandles.forEach(function (c) {
       const w = new THREE.Vector3();
       c.flame.getWorldPosition(w);
-      for (let i = 0; i < 3; i++) {
-        const s = new THREE.Mesh(new THREE.PlaneGeometry(0.22, 0.22), smokeMatBase.clone());
+      for (let i = 0; i < 2; i++) {
+        const s = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.26), smokeMatBase.clone());
         wishWorld.worldToLocal(s.position.copy(w));
+        s.position.x += (Math.random() - 0.5) * 0.04;
+        s.position.y += 0.04;
         s.userData.life = 0;
-        s.userData.max = 2.2 + Math.random();
-        s.userData.rise = 0.25 + Math.random() * 0.25;
+        s.userData.max = 3.1 + Math.random() * 0.7;
+        s.userData.rise = 0.18 + Math.random() * 0.08;
+        s.userData.drift = (Math.random() - 0.5) * 0.05;
         smokes.push(s);
         wishWorld.add(s);
       }
     });
-    const moonTween = { v: 0.22 };
-    tween(moonTween, { v: 0.9 }, 1.8, {
-      delay: 0.3,
-      ease: easeInOut
+    const moonTween = { v: moonLight.intensity };
+    tween(moonTween, { v: 0.95 }, 2.2, {
+      delay: 0.35,
+      ease: easeInOutCubic
     });
     // store so the loop can read it
     celebrate.moonTween = moonTween;
@@ -1604,7 +1666,8 @@
       c.mat.uniforms.uTime.value = time;
       c.mat.uniforms.uBlow.value = blowAmt;
       c.mat.uniforms.uOut.value = outAmt;
-      c.haloMat.opacity = 0.72 * (1 - outAmt) * (1 - blowAmt * 0.45);
+      const breathe = 0.64 + Math.sin(time * 2.3 + c.tip * 6.0) * 0.06;
+      c.haloMat.opacity = breathe * (1 - outAmt) * (1 - blowAmt * 0.45);
       const wp = c.flame.getWorldPosition(tmp);
       c.flame.lookAt(camera.position.x, wp.y, camera.position.z);
       c.halo.lookAt(camera.position.x, wp.y, camera.position.z);
@@ -1794,9 +1857,17 @@
     desired.copy(framed);
     desired.x += px;
     desired.y += py * 0.35;
-    camera.position.lerp(desired, phase === 'falling' ? 0.08 : 0.055);
+    if (arriving) {
+      arriveT += dt;
+      const k = easeInOutCubic(clamp(arriveT / arriveDur, 0, 1));
+      camGoal.lerpVectors(camAnchor, desired, k);
+      camera.position.copy(camGoal);
+      if (k >= 1) arriving = false;
+    } else {
+      camera.position.lerp(desired, 0.055);
+    }
     look.set(shot.lx + px * 0.35, shot.ly, shot.lz);
-    lookSm.lerp(look, 0.08);
+    if (!arriving) lookSm.lerp(look, 0.08);
     camera.lookAt(lookSm);
 
     if (world === 'study' && (phase === 'sealed' || phase === 'dragging' || phase === 'prelude')) {
@@ -1811,23 +1882,24 @@
     if (world === 'study') {
       const arr = dust.geometry.attributes.position.array;
       for (let i = 0; i < dustCount; i++) {
-        arr[i * 3 + 1] += dt * 0.08;
-        arr[i * 3] += Math.sin(time + i) * dt * 0.02;
+        arr[i * 3 + 1] += dt * 0.032;
+        arr[i * 3] += Math.sin(time * 0.4 + i * 0.65) * dt * 0.01;
+        arr[i * 3 + 2] += Math.cos(time * 0.33 + i) * dt * 0.006;
         if (arr[i * 3 + 1] > 1.9) arr[i * 3 + 1] = 0;
       }
       dust.geometry.attributes.position.needsUpdate = true;
-      const flick = 0.82 + Math.sin(time * 17) * 0.08 + Math.sin(time * 29) * 0.05;
-      studyLightL.intensity = 0.9 * flick;
-      studyLightR.intensity = 0.78 * (0.84 + Math.sin(time * 19 + 2) * 0.1);
+      const flick = 0.92 + Math.sin(time * 2.6) * 0.045 + Math.sin(time * 5.4 + 1.2) * 0.02;
+      studyLightL.intensity = 1.05 * flick;
+      studyLightR.intensity = 0.95 * (0.94 + Math.sin(time * 3.1 + 2) * 0.04);
       updateFlames(deskCandles, time, 0, 0);
     }
 
     for (let i = shards.length - 1; i >= 0; i--) {
       const s = shards[i];
-      s.userData.v.y -= dt * 3.4;
+      s.userData.v.y -= dt * 2.1;
       s.position.addScaledVector(s.userData.v, dt);
-      s.rotation.x += dt * 5;
-      s.rotation.y += dt * 3;
+      s.rotation.x += dt * 2.2;
+      s.rotation.y += dt * 1.4;
       s.userData.life -= dt;
       if (s.userData.life <= 0) {
         deskWorld.remove(s);
@@ -1851,14 +1923,14 @@
       if (extinguished > 0) extinguished += dt * 1.4;
       updateFlames(wishCandles, time, phase === 'celebrated' ? 1 : blow, out);
       const alive = 1 - Math.min(1, extinguished);
-      cakeLight.intensity = 1.2 * alive * (0.86 + Math.sin(time * 15) * 0.08);
+      cakeLight.intensity = 1.25 * alive * (0.9 + Math.sin(time * 3.2) * 0.05 + Math.sin(time * 6.4) * 0.02);
       if (celebrate.moonTween) moonLight.intensity = celebrate.moonTween.v;
 
       petals.forEach(function (p) {
-        p.position.y += p.userData.vy * dt * (celebrated ? 1.35 : 1);
-        p.position.x += Math.sin(time * 0.8 + p.userData.phase) * p.userData.amp * dt;
-        p.rotation.z += dt * p.userData.spin;
-        p.rotation.x += dt * 0.4;
+        p.position.y += p.userData.vy * dt * (celebrated ? 1.15 : 1);
+        p.position.x += Math.sin(time * 0.45 + p.userData.phase) * p.userData.amp * dt;
+        p.rotation.z += dt * p.userData.spin * 0.8;
+        p.rotation.x += dt * 0.18;
         if (p.position.y < 0.06) resetPetal(p, false);
       });
 
@@ -1866,8 +1938,9 @@
         s.userData.life += dt;
         const u = s.userData.life / s.userData.max;
         s.position.y += dt * s.userData.rise;
-        s.scale.setScalar(1 + u * 2.2);
-        s.material.opacity = Math.sin(Math.min(1, u) * Math.PI) * 0.28;
+        s.position.x += dt * (s.userData.drift || 0);
+        s.scale.setScalar(0.8 + u * 1.15);
+        s.material.opacity = Math.sin(Math.min(1, u) * Math.PI) * 0.14;
         s.lookAt(camera.position);
         if (u >= 1) s.visible = false;
       });
@@ -1877,9 +1950,9 @@
         bats.forEach(function (b) {
           const t = batT - b.userData.delay;
           if (t < 0) return;
-          b.position.set(-6.5 + t * 1.7, 4.5 + Math.sin(t * 7) * 0.18, -6.2);
+          b.position.set(-6.5 + t * 1.15, 4.2 + Math.sin(t * 1.7) * 0.22, -6.2);
           b.lookAt(camera.position.x, b.position.y, camera.position.z);
-          b.rotateZ(Math.sin(t * 18) * 0.35);
+          b.rotateZ(Math.sin(t * 5.5) * 0.2);
         });
       }
     }

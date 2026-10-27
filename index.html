@@ -21,15 +21,21 @@
   html, body {
     margin: 0;
     height: 100%;
+    min-height: 100dvh;
     background: var(--night);
     color: var(--cream);
     font-family: "Cormorant Garamond", Palatino, "Palatino Linotype", Georgia, serif;
     overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
   }
   body.fine, body.fine * { cursor: none; }
   body.fine #letter, body.fine #letter * { cursor: auto; }
   body.fine button, body.fine #mute { cursor: pointer; }
-  #stage { position: fixed; inset: 0; }
+  #stage { position: fixed; inset: 0; height: 100%; height: 100dvh; }
   #view { display: block; width: 100%; height: 100%; touch-action: none; }
   #vignette, #grain, #shade, #flash {
     position: fixed;
@@ -78,6 +84,7 @@
   }
   #prelude {
     top: calc(7vh + env(safe-area-inset-top));
+    padding: 0 calc(3.4rem + env(safe-area-inset-right)) 0 calc(1rem + env(safe-area-inset-left));
     background: none;
     transition: opacity 1.1s ease;
   }
@@ -94,6 +101,7 @@
   }
   #hint {
     bottom: calc(6vh + env(safe-area-inset-bottom));
+    padding: 0 max(1rem, env(safe-area-inset-left)) 0 max(1rem, env(safe-area-inset-right));
     opacity: 0;
     transition: opacity 0.8s ease;
     font-family: Cinzel, Palatino, serif;
@@ -119,7 +127,12 @@
     inset: 0;
     display: grid;
     place-items: center;
-    padding: max(1.2rem, env(safe-area-inset-top)) 1.1rem max(1.2rem, env(safe-area-inset-bottom));
+    padding:
+      max(0.75rem, env(safe-area-inset-top))
+      max(0.85rem, env(safe-area-inset-right))
+      max(0.75rem, env(safe-area-inset-bottom))
+      max(0.85rem, env(safe-area-inset-left));
+    touch-action: pan-y;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -133,8 +146,14 @@
   #letter.burn { opacity: 0; }
   .sheet {
     width: min(640px, 100%);
-    max-height: min(82vh, 760px);
+    max-height: min(100%, 760px);
+    min-height: 0;
     overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    -webkit-user-select: text;
+    user-select: text;
     color: var(--ink);
     background:
       radial-gradient(ellipse at 12% 0%, rgba(255,252,245,0.85), transparent 46%),
@@ -236,7 +255,6 @@
     line-height: 1.35;
     padding: 0 1rem;
   }
-  #makewish:hover, #back:hover, #reread:hover { transform: translateY(-1px); }
   #letter.reread #makewish { display: none; }
   #back { display: none; }
   #letter.reread #back { display: grid; place-items: center; }
@@ -257,6 +275,7 @@
   @keyframes ink { to { opacity: 1; transform: none; } }
   #wish-ui, #after {
     bottom: calc(5.5vh + env(safe-area-inset-bottom));
+    padding: 0 max(1rem, env(safe-area-inset-left)) 0 max(1rem, env(safe-area-inset-right));
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.8s ease;
@@ -281,13 +300,13 @@
   .how {
     margin: 0.35rem 0 0;
     font-style: italic;
-    font-size: 1.15rem;
+    font-size: clamp(1.02rem, 4.2vw, 1.15rem);
     color: rgba(246, 237, 217, 0.94);
     text-shadow: 0 2px 14px rgba(0,0,0,0.85);
   }
   .script {
     font-family: "Great Vibes", "Segoe Script", cursive;
-    font-size: clamp(3.4rem, 10vw, 6.4rem);
+    font-size: clamp(2.5rem, 16vw, 6.4rem);
     margin: 0.1rem 0 0;
     line-height: 0.9;
     color: #f7efe2;
@@ -311,11 +330,12 @@
     stroke-dashoffset: 175.93;
   }
   #reread {
-    margin-top: 0.8rem;
+    margin-top: 0.45rem;
     color: var(--gold);
-    font-size: 0.68rem;
+    font-size: 0.72rem;
     border-bottom: 1px solid rgba(231, 211, 164, 0.45);
-    padding: 0 0 0.2rem;
+    padding: 0.7rem 0.4rem 0.35rem;
+    min-height: 44px;
   }
   #mute {
     position: fixed;
@@ -369,6 +389,43 @@
     line-height: 1.45;
   }
   [hidden] { display: none !important; }
+  @media (pointer: coarse) {
+    #mute { width: 44px; height: 44px; }
+    #makewish, #back { width: 104px; height: 104px; }
+  }
+  @media (max-width: 420px) {
+    #prelude p, #hint, .kicker { letter-spacing: 0.18em; text-indent: 0.18em; }
+    .greet { letter-spacing: 0.04em; }
+    .sheet { padding: 1.25rem 1.05rem 1.15rem; }
+    .sheet .body, .sheet .ps { font-size: 1.12rem; margin-bottom: 0.75rem; }
+    .waxdot { width: 46px; height: 46px; margin-bottom: 0.7rem; font-size: 1.45rem; }
+  }
+  @media (max-height: 700px) {
+    .sheet { padding: 1rem 1.05rem 0.9rem; }
+    .waxdot { width: 40px; height: 40px; margin-bottom: 0.45rem; }
+    .rule { margin: 0.45rem auto 0.7rem; }
+    .sheet .body, .sheet .ps { margin-bottom: 0.55rem; }
+    #makewish, #back { width: 92px; height: 92px; }
+    .script { font-size: clamp(2.2rem, 12vw, 4.2rem); }
+    #wish-ui { bottom: calc(3.5vh + env(safe-area-inset-bottom)); }
+  }
+  @media (max-height: 460px) {
+    #letter { padding-top: 0.4rem; padding-bottom: 0.4rem; }
+    .sheet { padding: 0.65rem 0.95rem 0.55rem; }
+    .waxdot { width: 32px; height: 32px; margin-bottom: 0.25rem; font-size: 1.15rem; }
+    .greet { margin-bottom: 0.1rem; font-size: 0.92rem; }
+    .rule { margin: 0.28rem auto 0.4rem; }
+    .sheet .body, .sheet .ps { margin-bottom: 0.32rem; line-height: 1.32; font-size: 1.02rem; }
+    .sheet .ps { margin-top: 0.4rem; }
+    #makewish, #back { width: 76px; height: 76px; }
+  }
+  @media (hover: hover) and (pointer: fine) {
+    #makewish:hover, #back:hover, #reread:hover { transform: translateY(-1px); }
+  }
+  @media (max-width: 640px), (pointer: coarse) {
+    .sheet { transform: none; }
+    #letter.open .sheet { animation: none; }
+  }
   @media (prefers-reduced-motion: reduce) {
     #grain { animation: none; }
     .sheet p, .actions, #hint span { animation: none !important; opacity: 1 !important; transform: none !important; }
@@ -1480,13 +1537,14 @@
     studyLightR.intensity = 0;
     cakeLight.intensity = 1.15;
     moonLight.intensity = 0.55;
-    camera.fov = 36;
-    camera.updateProjectionMatrix();
     spot.position.set(0.2, 5.6, 2.4);
     spot.target.position.set(0, 0.6, 0);
     spot.intensity = 1.15;
     shot = shots.sanctum;
-    camera.position.set(shots.sanctum.x, shots.sanctum.y + 0.55, shots.sanctum.z + 0.95);
+    applyFraming();
+    camera.position.copy(framed);
+    camera.position.y += 0.4;
+    camera.position.z += 0.7;
     scene.fog.density = 0.032;
     phase = 'wish';
     setTimeout(function () { if (phase === 'wish') wishUI.classList.add('show'); }, reduced ? 80 : 420);
@@ -1554,8 +1612,9 @@
   window.addEventListener('pointerdown', function (e) {
     if (e.target.closest('#mute, #letter, #reread, button')) return;
     const p = eventPoint(e);
-    ndc.x = (p.clientX / window.innerWidth) * 2 - 1;
-    ndc.y = -(p.clientY / window.innerHeight) * 2 + 1;
+    const box = viewportBox();
+    ndc.x = ((p.clientX - box.x) / box.w) * 2 - 1;
+    ndc.y = -((p.clientY - box.y) / box.h) * 2 + 1;
     if (phase === 'prelude') dismissPrelude();
     if (phase === 'sealed') {
       pointer.copy(ndc);
@@ -1574,14 +1633,15 @@
 
   window.addEventListener('pointermove', function (e) {
     const p = eventPoint(e);
-    ndc.x = (p.clientX / window.innerWidth) * 2 - 1;
-    ndc.y = -(p.clientY / window.innerHeight) * 2 + 1;
+    const box = viewportBox();
+    ndc.x = ((p.clientX - box.x) / box.w) * 2 - 1;
+    ndc.y = -((p.clientY - box.y) / box.h) * 2 + 1;
     if (fine) {
       cur.style.left = p.clientX + 'px';
       cur.style.top = p.clientY + 'px';
     }
     if (phase === 'dragging' && drag) {
-      const pull = (drag.y - p.clientY) / (window.innerHeight * 0.42);
+      const pull = (drag.y - p.clientY) / (viewportBox().h * 0.42);
       flapState.a = clamp(pull, 0, 1);
       if (flapState.a > 0.06) crackOnce();
       setHint(flapState.a > 0.02 ? 'Pull it open' : 'Touch the seal');
@@ -1652,15 +1712,52 @@
 
   const envRest = { x: -0.03, y: -0.2 };
 
-  function resize() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    camera.aspect = w / Math.max(1, h);
-    camera.updateProjectionMatrix();
-    renderer.setSize(w, h, false);
+  const framed = new THREE.Vector3();
+  function viewportBox() {
+    const vv = window.visualViewport;
+    if (!vv) return { w: window.innerWidth, h: window.innerHeight, x: 0, y: 0 };
+    return { w: vv.width, h: vv.height, x: vv.offsetLeft, y: vv.offsetTop };
   }
-  window.addEventListener('resize', resize);
-  resize();
+  function applyFraming() {
+    const box = viewportBox();
+    const aspect = box.w / Math.max(1, box.h);
+    const baseFov = world === 'sanctum' ? 36 : 30;
+    const base = world === 'sanctum' ? shots.sanctum : shots.study;
+    const ox = base.x - base.lx;
+    const oy = base.y - base.ly;
+    const oz = base.z - base.lz;
+    const len = Math.hypot(ox, oy, oz) || 1;
+    const wide = 1.6;
+    let fov = baseFov;
+    let dist = len;
+    if (aspect < 1.5) {
+      const tanH = Math.tan(baseFov * Math.PI / 360) * wide;
+      const fovMatch = Math.atan(tanH / Math.max(aspect, 0.38)) * 360 / Math.PI;
+      const cap = 58;
+      if (fovMatch <= cap) fov = fovMatch;
+      else {
+        fov = cap;
+        const tanNow = Math.tan(fov * Math.PI / 360) * Math.max(aspect, 0.38);
+        dist = len * (tanH / tanNow) * 1.06;
+      }
+    }
+    camera.fov = fov;
+    camera.aspect = aspect;
+    camera.updateProjectionMatrix();
+    framed.set(base.lx + ox / len * dist, base.ly + oy / len * dist, base.lz + oz / len * dist);
+    const stage = $('stage');
+    stage.style.top = box.y + 'px';
+    stage.style.left = box.x + 'px';
+    stage.style.width = box.w + 'px';
+    stage.style.height = box.h + 'px';
+    renderer.setSize(Math.max(1, Math.round(box.w)), Math.max(1, Math.round(box.h)), false);
+  }
+  window.addEventListener('resize', applyFraming);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', applyFraming);
+    window.visualViewport.addEventListener('scroll', applyFraming);
+  }
+  applyFraming();
   makeGrain();
 
   const clock = new THREE.Clock();
@@ -1680,14 +1777,11 @@
 
     flapPivot.rotation.x = CLOSED + (OPEN - CLOSED) * flapState.a;
 
-    const portrait = window.innerWidth / window.innerHeight < 0.9;
     const px = ndc.x * (phase === 'reading' || phase === 'reread' ? 0.04 : 0.12);
     const py = ndc.y * 0.06;
-    desired.set(
-      shot.x + px,
-      shot.y + (portrait ? 0.32 : 0) + py * 0.35,
-      shot.z + (portrait ? (world === 'sanctum' ? 0.65 : 1.05) : 0)
-    );
+    desired.copy(framed);
+    desired.x += px;
+    desired.y += py * 0.35;
     camera.position.lerp(desired, phase === 'falling' ? 0.08 : 0.055);
     look.set(shot.lx + px * 0.35, shot.ly, shot.lz);
     lookSm.lerp(look, 0.08);

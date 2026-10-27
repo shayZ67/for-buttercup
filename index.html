@@ -72,10 +72,11 @@
     opacity: 0;
     background: radial-gradient(circle at center, rgba(255, 246, 232, 0.9) 0%, rgba(232, 186, 148, 0.62) 32%, rgba(74, 16, 36, 0.38) 66%, rgba(7, 3, 8, 0) 100%);
   }
-  #flash.go { animation: flash 1.75s cubic-bezier(0.45, 0, 0.2, 1) forwards; }
+  #flash.go { animation: flash 3.2s cubic-bezier(0.42, 0, 0.16, 1) forwards; }
   @keyframes flash {
     0% { opacity: 0; }
-    30% { opacity: 1; }
+    24% { opacity: 1; }
+    52% { opacity: 0.78; }
     100% { opacity: 0; }
   }
   @keyframes grain {
@@ -156,6 +157,7 @@
     max-height: min(100%, 760px);
     min-height: 0;
     overflow: auto;
+    text-align: center;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     touch-action: pan-y;
@@ -176,7 +178,7 @@
     position: relative;
   }
   #letter.open .sheet { animation: settle 0.9s ease forwards; }
-  #letter.burn .sheet { animation: burn 0.7s ease forwards; }
+  #letter.burn .sheet { animation: burn 1.45s ease forwards; }
   @keyframes settle { to { transform: rotate(-0.35deg) translateY(0); } }
   @keyframes burn {
     40% { filter: brightness(1.45) saturate(1.15); transform: rotate(-0.35deg) scale(1.03); }
@@ -211,6 +213,7 @@
     font-weight: 500;
     font-size: clamp(1.05rem, 2.4vw, 1.35rem);
     letter-spacing: 0.08em;
+    padding-left: 0.08em;
     text-align: center;
     line-height: 1.25;
     margin: 0 0 0.42rem;
@@ -237,8 +240,11 @@
   .sheet .body, .sheet .ps {
     font-size: clamp(1.18rem, 2.5vw, 1.48rem);
     line-height: 1.55;
-    margin: 0 0 0.95rem;
+    margin: 0 auto 0.95rem;
     font-weight: 500;
+    text-align: center;
+    text-wrap: balance;
+    padding-inline: 0.35em;
   }
   .sheet .ps {
     margin-top: 1.15rem;
@@ -247,7 +253,15 @@
     color: #6a3040;
     font-size: clamp(1.05rem, 2.2vw, 1.28rem);
   }
-  .heart { font-style: normal; }
+  .heart {
+    font-style: normal;
+    display: inline-block;
+    width: 0;
+    overflow: visible;
+    white-space: nowrap;
+    vertical-align: -0.02em;
+    transform: translateX(0.32em);
+  }
   .actions { display: flex; justify-content: center; margin-top: 0.4rem; }
   #makewish, #back, #reread {
     font-family: Cinzel, Palatino, serif;
@@ -301,11 +315,25 @@
   }
   #after {
     bottom: auto;
-    top: calc(7vh + env(safe-area-inset-top));
+    top: clamp(4.6rem, 30vh, 17rem);
+    padding-top: 0.2rem;
+  }
+  #after::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    width: min(92vw, 560px);
+    height: 11rem;
+    transform: translate(-50%, -48%);
+    background: radial-gradient(ellipse at center, rgba(4, 6, 14, 0.5) 0%, rgba(4, 6, 14, 0.16) 46%, rgba(4, 6, 14, 0) 72%);
+    z-index: -1;
+    pointer-events: none;
   }
   #wish-ui.show, #after.show { opacity: 1; }
   #after.show { pointer-events: none; }
-  #reread { pointer-events: auto; }
+  #reread { pointer-events: none; }
+  #after.show #reread { pointer-events: auto; }
   .kicker {
     font-family: Cinzel, Palatino, serif;
     letter-spacing: 0.46em;
@@ -330,6 +358,21 @@
     line-height: 0.9;
     color: #f7efe2;
     text-shadow: 0 12px 36px rgba(0,0,0,0.62), 0 2px 12px rgba(4, 8, 18, 0.45);
+  }
+  #after .kicker {
+    color: #f6e7c2;
+    text-shadow:
+      0 1px 0 #10060c,
+      0 0 14px rgba(0, 0, 0, 0.95),
+      0 8px 24px rgba(0, 0, 0, 0.88);
+  }
+  #after .script {
+    color: #fffaf3;
+    text-shadow:
+      0 2px 0 rgba(10, 5, 12, 0.95),
+      0 0 2px rgba(8, 4, 12, 1),
+      0 0 18px rgba(0, 0, 0, 0.95),
+      0 12px 32px rgba(0, 0, 0, 0.85);
   }
   .ringwrap {
     width: 86px;
@@ -414,7 +457,7 @@
   }
   @media (max-width: 420px) {
     #prelude p, #hint, .kicker { letter-spacing: 0.18em; text-indent: 0.18em; }
-    .greet { letter-spacing: 0.04em; }
+    .greet { letter-spacing: 0.06em; padding-left: 0.06em; }
     .dear { font-size: 2.05rem; }
     .sheet { padding: 1.25rem 1.05rem 1.15rem; }
     .sheet .body, .sheet .ps { font-size: 1.12rem; margin-bottom: 0.75rem; }
@@ -464,13 +507,13 @@
   <div id="hint" aria-live="polite"><span>Touch the seal</span></div>
   <div id="letter" role="dialog" aria-label="Birthday letter">
     <article class="sheet">
-      <div class="waxdot" aria-hidden="true">B</div>
+      <div class="waxdot" aria-hidden="true">S</div>
       <p class="dear">Dear Dhea</p>
       <p class="greet">Happy birthday <em>buttercup</em></p>
       <hr class="rule">
       <p class="body">I hope your day is as lovely and special as you are. Wishing you lots of love, happiness and blessings <span class="heart">❤️</span></p>
       <p class="body">Also don’t feel shy to spoil yourself you deserve it <span class="heart">♥️</span></p>
-      <p class="ps">(I’ll wait for that You being gay) it’s fine</p>
+      <p class="ps">(I’ll wait for that You being gay) it’s fine <span class="heart">😂</span></p>
       <div class="actions">
         <button type="button" id="makewish">Make<br>a wish</button>
         <button type="button" id="back">Back to<br>the night</button>
@@ -612,32 +655,8 @@
       master.connect(ctx.destination);
       this.master = master;
 
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.value = 280;
-      const drone = ctx.createGain();
-      drone.gain.value = 0;
-      filter.connect(drone);
-      drone.connect(master);
-      [55, 82.41, 110, 164.81].forEach(function (f, i) {
-        const o = ctx.createOscillator();
-        o.type = 'sine';
-        o.frequency.value = f;
-        const g = ctx.createGain();
-        g.gain.value = [0.09, 0.035, 0.03, 0.018][i];
-        o.connect(g);
-        g.connect(filter);
-        o.start();
-      });
-      const now = ctx.currentTime;
-      drone.gain.linearRampToValueAtTime(0.9, now + 1.6);
-      const lfo = ctx.createOscillator();
-      lfo.frequency.value = 0.06;
-      const lg = ctx.createGain();
-      lg.gain.value = 60;
-      lfo.connect(lg);
-      lg.connect(filter.frequency);
-      lfo.start();
+      this.started = ctx.currentTime + 0.15;
+      this.played = {};
 
       const seconds = 1.2;
       const len = Math.floor(ctx.sampleRate * seconds);
@@ -704,7 +723,7 @@
     chime: function () {
       if (!this.ctx) return;
       const ctx = this.ctx;
-      [523.25, 659.25, 783.99, 1046.5].forEach(function (f, i) {
+      [587.33, 698.46, 880, 1174.66].forEach(function (f, i) {
         const o = ctx.createOscillator();
         o.type = 'sine';
         o.frequency.value = f;
@@ -721,7 +740,85 @@
     },
     setWind: function (v) {
       if (!this.wind || !this.ctx) return;
-      this.wind.gain.setTargetAtTime(v * 0.18, this.ctx.currentTime, 0.08);
+      this.wind.gain.setTargetAtTime(v * 0.12, this.ctx.currentTime, 0.08);
+    },
+    // D minor, slow. A music-box line over soft chords. Same key as the wish chime.
+    loop: 12.4,
+    score: [
+      { t: 0.00, f: 293.66, d: 0.78, g: 0.07, wave: 'triangle', cut: 2200 },
+      { t: 0.72, f: 349.23, d: 0.58, g: 0.06, wave: 'triangle', cut: 2200 },
+      { t: 1.32, f: 440.00, d: 0.86, g: 0.064, wave: 'triangle', cut: 2400 },
+      { t: 2.24, f: 392.00, d: 0.62, g: 0.055, wave: 'triangle', cut: 2200 },
+      { t: 2.90, f: 349.23, d: 0.52, g: 0.05, wave: 'triangle', cut: 2000 },
+      { t: 3.46, f: 329.63, d: 0.74, g: 0.055, wave: 'triangle', cut: 2000 },
+      { t: 4.28, f: 293.66, d: 1.15, g: 0.066, wave: 'triangle', cut: 2000 },
+      { t: 5.55, f: 261.63, d: 0.52, g: 0.046, wave: 'triangle', cut: 1800 },
+      { t: 6.12, f: 293.66, d: 0.56, g: 0.052, wave: 'triangle', cut: 2000 },
+      { t: 6.72, f: 349.23, d: 0.72, g: 0.058, wave: 'triangle', cut: 2200 },
+      { t: 7.52, f: 440.00, d: 0.64, g: 0.058, wave: 'triangle', cut: 2400 },
+      { t: 8.22, f: 523.25, d: 0.7, g: 0.05, wave: 'triangle', cut: 2600 },
+      { t: 9.00, f: 493.88, d: 0.55, g: 0.046, wave: 'triangle', cut: 2400 },
+      { t: 9.60, f: 440.00, d: 0.82, g: 0.054, wave: 'triangle', cut: 2200 },
+      { t: 10.50, f: 349.23, d: 1.35, g: 0.06, wave: 'triangle', cut: 2000 },
+      { t: 0.00, f: 146.83, d: 2.3, g: 0.04, wave: 'sine', cut: 640 },
+      { t: 0.00, f: 220.00, d: 2.3, g: 0.026, wave: 'sine', cut: 700 },
+      { t: 0.00, f: 174.61, d: 2.3, g: 0.022, wave: 'sine', cut: 760 },
+      { t: 3.46, f: 146.83, d: 2.1, g: 0.034, wave: 'sine', cut: 640 },
+      { t: 3.46, f: 196.00, d: 2.1, g: 0.02, wave: 'sine', cut: 700 },
+      { t: 3.46, f: 233.08, d: 2.1, g: 0.018, wave: 'sine', cut: 760 },
+      { t: 6.72, f: 130.81, d: 2.2, g: 0.034, wave: 'sine', cut: 560 },
+      { t: 6.72, f: 196.00, d: 2.2, g: 0.02, wave: 'sine', cut: 680 },
+      { t: 6.72, f: 261.63, d: 2.0, g: 0.016, wave: 'sine', cut: 800 },
+      { t: 10.05, f: 146.83, d: 2.15, g: 0.038, wave: 'sine', cut: 640 },
+      { t: 10.05, f: 220.00, d: 2.15, g: 0.022, wave: 'sine', cut: 720 },
+      { t: 10.05, f: 293.66, d: 2.0, g: 0.016, wave: 'sine', cut: 860 }
+    ],
+    playNote: function (t, ev) {
+      if (!this.ctx || !this.master) return;
+      const ctx = this.ctx;
+      const o = ctx.createOscillator();
+      o.type = ev.wave || 'sine';
+      o.frequency.setValueAtTime(ev.f, t);
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(ev.cut || 2000, t);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002, ev.g), t + 0.028);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(0.08, ev.d));
+      o.connect(filter);
+      filter.connect(g);
+      g.connect(this.master);
+      o.start(t);
+      o.stop(t + ev.d + 0.03);
+    },
+    ping: function (freq, gain) {
+      if (!this.ctx) return;
+      this.playNote(this.ctx.currentTime, { f: freq, d: 0.38, g: gain || 0.04, wave: 'sine', cut: 3400 });
+    },
+    pump: function () {
+      if (!this.ctx || this.started == null) return;
+      const now = this.ctx.currentTime;
+      const horizon = now + 0.5;
+      const loop = this.loop;
+      const lapNow = Math.floor((now - this.started) / loop);
+      for (let lap = Math.max(0, lapNow - 1); lap <= lapNow + 1; lap++) {
+        for (let i = 0; i < this.score.length; i++) {
+          const ev = this.score[i];
+          const abs = this.started + lap * loop + ev.t;
+          if (abs < now - 0.05 || abs > horizon) continue;
+          const key = lap + ':' + i;
+          if (this.played[key]) continue;
+          this.played[key] = lap;
+          this.playNote(abs, ev);
+        }
+      }
+      if (this.pruneLap !== lapNow && lapNow > 1) {
+        this.pruneLap = lapNow;
+        const keep = lapNow - 1;
+        const played = this.played;
+        Object.keys(played).forEach(function (k) { if (played[k] < keep) delete played[k]; });
+      }
     }
   };
 
@@ -817,19 +914,47 @@
     g.fillRect(0, 0, w, h);
   });
 
-  const petalTex = canvasTex(128, 160, function (g, w, h) {
+  const petalTex = canvasTex(256, 340, function (g, w, h) {
     g.clearRect(0, 0, w, h);
-    g.translate(w / 2, h * 0.55);
-    g.fillStyle = '#8e1d3c';
+    g.translate(w / 2, h * 0.52);
     g.beginPath();
-    g.moveTo(0, -h * 0.42);
-    g.bezierCurveTo(w * 0.42, -h * 0.2, w * 0.36, h * 0.28, 0, h * 0.38);
-    g.bezierCurveTo(-w * 0.36, h * 0.28, -w * 0.42, -h * 0.2, 0, -h * 0.42);
+    g.moveTo(0, -h * 0.46);
+    g.bezierCurveTo(w * 0.22, -h * 0.34, w * 0.48, -h * 0.05, w * 0.3, h * 0.16);
+    g.bezierCurveTo(w * 0.2, h * 0.3, w * 0.08, h * 0.4, 0, h * 0.42);
+    g.bezierCurveTo(-w * 0.1, h * 0.38, -w * 0.24, h * 0.26, -w * 0.34, h * 0.1);
+    g.bezierCurveTo(-w * 0.46, -h * 0.08, -w * 0.2, -h * 0.36, 0, -h * 0.46);
+    const body = g.createLinearGradient(0, -h * 0.46, 0, h * 0.42);
+    body.addColorStop(0, '#f3c9d2');
+    body.addColorStop(0.28, '#d4526e');
+    body.addColorStop(0.62, '#8e1c3a');
+    body.addColorStop(1, '#5c1024');
+    g.fillStyle = body;
     g.fill();
-    g.fillStyle = 'rgba(255,180,190,0.35)';
+    g.globalCompositeOperation = 'destination-in';
+    g.fillStyle = '#fff';
+    g.fill();
+    const edge = g.createRadialGradient(0, 0, h * 0.05, 0, h * 0.05, h * 0.48);
+    edge.addColorStop(0, 'rgba(255,255,255,1)');
+    edge.addColorStop(0.72, 'rgba(255,255,255,0.95)');
+    edge.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = edge;
+    g.fillRect(-w, -h, w * 2, h * 2);
+    g.globalCompositeOperation = 'source-over';
+    g.strokeStyle = 'rgba(255, 214, 220, 0.45)';
+    g.lineWidth = 1.2;
     g.beginPath();
-    g.ellipse(0, -8, 10, 28, 0, 0, Math.PI * 2);
-    g.fill();
+    g.moveTo(0, -h * 0.28);
+    g.bezierCurveTo(6, -h * 0.05, -4, h * 0.12, 0, h * 0.3);
+    g.stroke();
+    for (let i = 0; i < 5; i++) {
+      const s = (i - 2) * 0.08;
+      g.strokeStyle = 'rgba(120, 20, 40, 0.28)';
+      g.lineWidth = 0.8;
+      g.beginPath();
+      g.moveTo(0, -h * 0.18);
+      g.bezierCurveTo(w * s, 0, w * s * 1.4, h * 0.12, w * s * 0.8, h * 0.28);
+      g.stroke();
+    }
   });
 
   const sealTex = canvasTex(512, 512, function (g) {
@@ -844,33 +969,62 @@
     g.beginPath();
     g.arc(0, 0, 154, 0, Math.PI * 2);
     g.stroke();
-    g.lineWidth = 7;
+    g.lineWidth = 6;
     g.lineJoin = 'round';
     g.beginPath();
-    g.moveTo(0, 78);
-    g.bezierCurveTo(-70, 10, -78, -70, -28, -78);
-    g.bezierCurveTo(-8, -84, 0, -48, 0, -36);
-    g.bezierCurveTo(0, -48, 8, -84, 28, -78);
-    g.bezierCurveTo(78, -70, 70, 10, 0, 78);
+    g.moveTo(0, -48);
+    g.bezierCurveTo(-36, -78, -52, -128, -16, -134);
+    g.bezierCurveTo(-2, -138, 0, -112, 0, -104);
+    g.bezierCurveTo(0, -112, 2, -138, 16, -134);
+    g.bezierCurveTo(52, -128, 36, -78, 0, -48);
     g.stroke();
-    g.fillStyle = '#f3e0b0';
-    g.font = '600 150px Palatino Linotype, Palatino, Times New Roman, serif';
+    g.fillStyle = '#fff6df';
+    g.font = '700 228px Palatino Linotype, Palatino, Georgia, serif';
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    g.fillText('B', 0, -8);
+    g.fillText('S', 0, 42);
   });
 
   const moonTex = canvasTex(512, 512, function (g, w, h) {
-    g.fillStyle = '#f4f1e6';
+    const cx = w * 0.5;
+    const cy = h * 0.5;
+    const rad = w * 0.5 - 2;
+    g.fillStyle = '#ebe4d4';
     g.beginPath();
-    g.arc(w / 2, h / 2, w / 2 - 2, 0, Math.PI * 2);
+    g.arc(cx, cy, rad, 0, Math.PI * 2);
     g.fill();
-    for (let i = 0; i < 28; i++) {
-      g.fillStyle = 'rgba(180,170,150,' + (0.15 + Math.random() * 0.25) + ')';
+    g.save();
+    g.beginPath();
+    g.arc(cx, cy, rad, 0, Math.PI * 2);
+    g.clip();
+    const maria = [[0.46, 0.58, 0.16, 0.11], [0.62, 0.42, 0.1, 0.07], [0.38, 0.4, 0.08, 0.06], [0.55, 0.66, 0.12, 0.05]];
+    maria.forEach(function (m) {
+      g.fillStyle = 'rgba(138, 136, 128, 0.38)';
       g.beginPath();
-      g.arc(80 + Math.random() * 360, 80 + Math.random() * 360, 6 + Math.random() * 22, 0, Math.PI * 2);
+      g.ellipse(w * m[0], h * m[1], w * m[2], h * m[3], 0.4, 0, Math.PI * 2);
       g.fill();
+    });
+    for (let i = 0; i < 46; i++) {
+      const x = 40 + Math.random() * (w - 80);
+      const y = 40 + Math.random() * (h - 80);
+      const r = 3 + Math.random() * 16;
+      g.fillStyle = 'rgba(120, 116, 108, ' + (0.18 + Math.random() * 0.28) + ')';
+      g.beginPath();
+      g.arc(x, y, r, 0, Math.PI * 2);
+      g.fill();
+      g.strokeStyle = 'rgba(255, 250, 240, 0.28)';
+      g.lineWidth = 1.2;
+      g.beginPath();
+      g.arc(x - r * 0.25, y - r * 0.28, r * 0.72, Math.PI * 1.05, Math.PI * 1.85);
+      g.stroke();
     }
+    const limb = g.createRadialGradient(w * 0.4, h * 0.38, rad * 0.15, cx, cy, rad);
+    limb.addColorStop(0, 'rgba(255,252,244,0.28)');
+    limb.addColorStop(0.62, 'rgba(0,0,0,0)');
+    limb.addColorStop(1, 'rgba(28, 32, 42, 0.62)');
+    g.fillStyle = limb;
+    g.fillRect(0, 0, w, h);
+    g.restore();
   });
 
   function flameMaterial() {
@@ -945,6 +1099,42 @@
     study: { x: 0, y: 1.86, z: 3.78, lx: 0, ly: 0.16, lz: 0 },
     sanctum: { x: 0, y: 1.78, z: 4.55, lx: 0, ly: 1.22, lz: -0.5 }
   };
+  const viewOrbit = { yaw: 0, pitch: 0, dist: 1 };
+  const orbitPointers = new Map();
+  let orbitDrag = null;
+  function applyOrbit(pos, pivot) {
+    let ox = pos.x - pivot.x;
+    let oy = pos.y - pivot.y;
+    let oz = pos.z - pivot.z;
+    const cy = Math.cos(viewOrbit.yaw);
+    const sy = Math.sin(viewOrbit.yaw);
+    const x1 = ox * cy + oz * sy;
+    const z1 = -ox * sy + oz * cy;
+    ox = x1;
+    oz = z1;
+    const h = Math.hypot(ox, oz) || 1;
+    const cp = Math.cos(viewOrbit.pitch);
+    const sp = Math.sin(viewOrbit.pitch);
+    const h2 = h * cp - oy * sp;
+    const y2 = h * sp + oy * cp;
+    const s = viewOrbit.dist;
+    pos.set(pivot.x + (ox / h) * h2 * s, pivot.y + y2 * s, pivot.z + (oz / h) * h2 * s);
+  }
+  function clampOrbit() {
+    viewOrbit.yaw = clamp(viewOrbit.yaw, -0.95, 0.95);
+    viewOrbit.pitch = clamp(viewOrbit.pitch, -0.42, 0.5);
+    viewOrbit.dist = clamp(viewOrbit.dist, 0.56, 1.42);
+  }
+  function twoPointerSpan() {
+    if (orbitPointers.size < 2) return null;
+    const pts = [];
+    orbitPointers.forEach(function (p) { pts.push(p); });
+    return {
+      dist: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1,
+      x: (pts[0].x + pts[1].x) / 2,
+      y: (pts[0].y + pts[1].y) / 2
+    };
+  }
   let shot = shots.study;
   const desired = new THREE.Vector3();
   const look = new THREE.Vector3(0, 0.16, 0);
@@ -1021,8 +1211,26 @@
     roughness: 0.48,
     metalness: 0.12
   });
-  const stoneMat = new THREE.MeshStandardMaterial({ color: 0x16161c, roughness: 0.9 });
-  const roofMat = new THREE.MeshStandardMaterial({ color: 0x1a0c12, roughness: 0.7 });
+  const stoneTex = canvasTex(256, 256, function (g, w, h) {
+    g.fillStyle = '#2a2c32';
+    g.fillRect(0, 0, w, h);
+    const cols = 4;
+    const rows = 7;
+    for (let y = 0; y < rows; y++) {
+      const off = (y % 2) * (w / cols) * 0.5;
+      for (let x = -1; x < cols + 1; x++) {
+        const shade = 28 + Math.random() * 22;
+        g.fillStyle = 'rgb(' + shade + ',' + (shade + 1) + ',' + (shade + 6) + ')';
+        g.fillRect(off + x * (w / cols) + 1.5, y * (h / rows) + 1.5, w / cols - 3, h / rows - 3);
+        g.strokeStyle = 'rgba(0,0,0,0.45)';
+        g.strokeRect(off + x * (w / cols) + 1.5, y * (h / rows) + 1.5, w / cols - 3, h / rows - 3);
+      }
+    }
+  });
+  stoneTex.wrapS = stoneTex.wrapT = THREE.RepeatWrapping;
+  stoneTex.repeat.set(1.4, 2.2);
+  const stoneMat = new THREE.MeshStandardMaterial({ map: stoneTex, color: 0x4a4a54, roughness: 0.94, metalness: 0.02 });
+  const roofMat = new THREE.MeshStandardMaterial({ map: stoneTex, color: 0x3a242c, roughness: 0.82 });
   const letterMat = paperMat.clone();
   letterMat.transparent = true;
 
@@ -1201,22 +1409,24 @@
   function makeRose(scl) {
     const g = new THREE.Group();
     const geo = new THREE.PlaneGeometry(0.15, 0.2);
-    const mat = new THREE.MeshStandardMaterial({
-      map: petalTex,
-      color: 0xffffff,
-      transparent: true,
-      side: THREE.DoubleSide,
-      roughness: 0.5,
-      depthWrite: false
+    const mats = [0xc47a8c, 0xf0c2cc, 0xfff3f5].map(function (hex) {
+      return new THREE.MeshStandardMaterial({
+        map: petalTex,
+        color: hex,
+        transparent: true,
+        side: THREE.DoubleSide,
+        roughness: 0.46,
+        depthWrite: false
+      });
     });
-    for (let i = 0; i < 16; i++) {
-      const t = i / 15;
-      const a = i * 0.82;
-      const rad = 0.012 + t * 0.09;
-      const p = new THREE.Mesh(geo, mat);
-      p.position.set(Math.cos(a) * rad, t * 0.01, Math.sin(a) * rad);
-      p.rotation.set(-0.25 - t * 0.85, -a, 0.15);
-      p.scale.setScalar(0.42 + t * 0.9);
+    for (let i = 0; i < 20; i++) {
+      const t = i / 19;
+      const a = i * 0.72;
+      const rad = 0.01 + t * 0.085;
+      const p = new THREE.Mesh(geo, mats[t < 0.33 ? 0 : t < 0.7 ? 1 : 2]);
+      p.position.set(Math.cos(a) * rad, t * 0.012, Math.sin(a) * rad);
+      p.rotation.set(-0.2 - t * 0.95, -a, (i % 2 ? 0.18 : -0.12));
+      p.scale.setScalar(0.36 + t * 0.95);
       g.add(p);
     }
     const bud = new THREE.Mesh(
@@ -1280,9 +1490,25 @@
   deskWorld.add(dust);
 
   /* ---------- sanctum ---------- */
+  const groundTex = canvasTex(512, 512, function (g, w, h) {
+    g.fillStyle = '#101614';
+    g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 3200; i++) {
+      const v = 16 + Math.random() * 28;
+      g.fillStyle = 'rgba(' + v + ',' + (v + 14) + ',' + (v + 6) + ',' + (0.2 + Math.random() * 0.35) + ')';
+      g.fillRect(Math.random() * w, Math.random() * h, 1 + Math.random() * 2, 3 + Math.random() * 8);
+    }
+    const sheen = g.createRadialGradient(w * 0.45, h * 0.4, 10, w * 0.5, h * 0.5, w * 0.62);
+    sheen.addColorStop(0, 'rgba(186, 198, 210, 0.09)');
+    sheen.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = sheen;
+    g.fillRect(0, 0, w, h);
+  });
+  groundTex.wrapS = groundTex.wrapT = THREE.RepeatWrapping;
+  groundTex.repeat.set(5, 5);
   const floor = new THREE.Mesh(
-    new THREE.CircleGeometry(7.5, 48),
-    new THREE.MeshStandardMaterial({ color: 0x0c070a, roughness: 0.92 })
+    new THREE.CircleGeometry(8.2, 64),
+    new THREE.MeshStandardMaterial({ map: groundTex, color: 0xc8d0c8, roughness: 0.96 })
   );
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -0.02;
@@ -1297,10 +1523,20 @@
   nightTable.receiveShadow = true;
   wishWorld.add(nightTable);
 
+  const frostingTex = canvasTex(256, 256, function (g, w, h) {
+    g.fillStyle = '#fff';
+    g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 1600; i++) {
+      g.fillStyle = 'rgba(90, 50, 55, ' + (0.03 + Math.random() * 0.06) + ')';
+      g.beginPath();
+      g.arc(Math.random() * w, Math.random() * h, 0.4 + Math.random() * 1.5, 0, Math.PI * 2);
+      g.fill();
+    }
+  });
   function addTier(r, h, y, color) {
     const m = new THREE.Mesh(
       new THREE.CylinderGeometry(r, r * 0.985, h, 48),
-      new THREE.MeshStandardMaterial({ color: color, roughness: 0.58, metalness: 0.03 })
+      new THREE.MeshStandardMaterial({ map: frostingTex, color: color, roughness: 0.48, metalness: 0.02 })
     );
     m.position.y = y;
     m.castShadow = true;
@@ -1370,19 +1606,35 @@
       side: THREE.BackSide,
       depthWrite: false,
       toneMapped: false,
-      uniforms: { uMoon: { value: new THREE.Vector3(-0.35, 3.2, -8).normalize() } },
+      uniforms: {
+        uMoon: { value: new THREE.Vector3(-0.449, 3.537, -11.548).normalize() },
+        uTime: { value: 0 }
+      },
       vertexShader: 'varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
       fragmentShader: [
         'varying vec3 vP;',
         'uniform vec3 uMoon;',
+        'uniform float uTime;',
+        'float hash(vec3 p){ return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }',
         'void main(){',
         '  vec3 n = normalize(vP);',
-        '  float h = smoothstep(-0.28, 0.64, n.y);',
-        '  vec3 col = mix(vec3(0.085, 0.018, 0.038), vec3(0.007, 0.011, 0.026), h);',
-        '  float m = pow(max(dot(n, uMoon), 0.0), 12.0);',
-        '  float edge = pow(max(dot(n, uMoon), 0.0), 6.0);',
-        '  col += vec3(0.16, 0.18, 0.26) * m;',
-        '  col += vec3(0.04, 0.05, 0.08) * edge;',
+        '  float h = smoothstep(-0.32, 0.78, n.y);',
+        '  vec3 col = mix(vec3(0.10, 0.022, 0.042), vec3(0.008, 0.012, 0.034), h);',
+        '  float hor = exp(-abs(n.y) * 6.5);',
+        '  col += vec3(0.045, 0.055, 0.09) * hor;',
+        '  float moonDot = max(dot(n, uMoon), 0.0);',
+        '  col += vec3(0.20, 0.22, 0.32) * pow(moonDot, 22.0);',
+        '  col += vec3(0.055, 0.065, 0.11) * pow(moonDot, 4.5);',
+        '  vec3 cell = floor(n * 128.0);',
+        '  vec3 f = fract(n * 128.0) - 0.5;',
+        '  float rnd = hash(cell);',
+        '  float tw = 0.55 + 0.45 * sin(uTime * (0.7 + rnd * 3.4) + rnd * 60.0);',
+        '  float above = smoothstep(-0.04, 0.16, n.y);',
+        '  float offMoon = 1.0 - smoothstep(0.86, 0.97, moonDot);',
+        '  float dust = step(0.948, rnd) * smoothstep(0.055, 0.0, length(f));',
+        '  float bright = step(0.988, hash(cell + 2.7)) * smoothstep(0.09, 0.0, length(f));',
+        '  col += vec3(0.86, 0.9, 1.0) * dust * tw * above * offMoon * 1.25;',
+        '  col += vec3(1.0, 0.93, 0.78) * bright * (0.7 + 0.3 * tw) * above * offMoon * 1.4;',
         '  gl_FragColor = vec4(col, 1.0);',
         '}'
       ].join('\n')
@@ -1394,8 +1646,8 @@
     new THREE.SphereGeometry(1.15, 32, 24),
     new THREE.MeshBasicMaterial({ map: moonTex, toneMapped: false })
   );
-  moon.position.set(-0.35, 3.15, -8);
-  moon.scale.setScalar(1.35);
+  moon.position.set(-0.449, 3.537, -11.548);
+  moon.scale.setScalar(1.732);
   moon.material.fog = false;
   wishWorld.add(moon);
 
@@ -1419,6 +1671,148 @@
   const keep = new THREE.Mesh(new THREE.BoxGeometry(2.15, 1.25, 0.45), stoneMat);
   keep.position.set(0.15, 0.62, -6.55);
   wishWorld.add(keep);
+
+  const blade = new THREE.PlaneGeometry(0.07, 0.2);
+  blade.translate(0, 0.1, 0);
+  const bladeTex = canvasTex(64, 128, function (g, w, h) {
+    g.clearRect(0, 0, w, h);
+    const grd = g.createLinearGradient(0, h, 0, 0);
+    grd.addColorStop(0, 'rgba(18, 36, 28, 0)');
+    grd.addColorStop(0.18, 'rgba(42, 78, 58, 1)');
+    grd.addColorStop(1, 'rgba(168, 186, 164, 0.95)');
+    g.fillStyle = grd;
+    g.beginPath();
+    g.moveTo(w * 0.5, 4);
+    g.quadraticCurveTo(w * 0.82, h * 0.45, w * 0.62, h - 2);
+    g.lineTo(w * 0.38, h - 2);
+    g.quadraticCurveTo(w * 0.18, h * 0.45, w * 0.5, 4);
+    g.fill();
+  });
+  const grassMat = new THREE.MeshStandardMaterial({
+    map: bladeTex,
+    color: 0xd5e2d4,
+    roughness: 0.82,
+    side: THREE.DoubleSide,
+    alphaTest: 0.35,
+    emissive: new THREE.Color(0x1a2c22),
+    emissiveIntensity: 0.35
+  });
+  const GRASS_N = 110;
+  const grassA = new THREE.InstancedMesh(blade, grassMat, GRASS_N);
+  const grassB = new THREE.InstancedMesh(blade, grassMat, GRASS_N);
+  const sprout = new THREE.Object3D();
+  let gi = 0;
+  let guard = 0;
+  while (gi < GRASS_N && guard < 2500) {
+    guard++;
+    const a = Math.random() * Math.PI * 2;
+    const rad = 2.35 + Math.random() * 1.7;
+    const z = Math.sin(a) * rad;
+    if (z > 1.15) continue;
+    const hgt = 0.55 + Math.random() * 0.7;
+    const yaw = Math.random() * Math.PI;
+    sprout.position.set(Math.cos(a) * rad, 0, z);
+    sprout.rotation.set((Math.random() - 0.5) * 0.25, yaw, 0);
+    sprout.scale.set(1, hgt, 1);
+    sprout.updateMatrix();
+    grassA.setMatrixAt(gi, sprout.matrix);
+    sprout.rotation.y = yaw + Math.PI / 2;
+    sprout.updateMatrix();
+    grassB.setMatrixAt(gi, sprout.matrix);
+    gi++;
+  }
+  grassA.count = gi;
+  grassB.count = gi;
+  grassA.instanceMatrix.needsUpdate = true;
+  grassB.instanceMatrix.needsUpdate = true;
+  wishWorld.add(grassA);
+  wishWorld.add(grassB);
+
+  function cypress(x, z, h) {
+    const g = new THREE.Group();
+    const mat = new THREE.MeshStandardMaterial({ color: 0x1a3328, roughness: 0.88 });
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.055, h * 0.22, 6), mat);
+    trunk.position.y = h * 0.1;
+    const low = new THREE.Mesh(new THREE.ConeGeometry(h * 0.16, h * 0.55, 9), mat);
+    low.position.y = h * 0.38;
+    const top = new THREE.Mesh(new THREE.ConeGeometry(h * 0.1, h * 0.4, 8), mat);
+    top.position.y = h * 0.74;
+    g.add(trunk, low, top);
+    g.position.set(x, 0, z);
+    wishWorld.add(g);
+  }
+  cypress(-3.15, -5.55, 2.55);
+  cypress(-2.2, -6.25, 1.85);
+  cypress(2.45, -6.05, 2.15);
+  cypress(3.35, -5.4, 2.7);
+
+  [[-2.45, 0.85, 0.55], [2.5, 0.35, 0.48], [0.55, -2.45, 0.42], [-0.9, 2.35, 0.5]].forEach(function (p) {
+    const rose = makeRose(p[2]);
+    rose.position.set(p[0], 0.02, p[1]);
+    rose.rotation.x = 0.15;
+    wishWorld.add(rose);
+  });
+
+  function moonflower(x, z) {
+    const g = new THREE.Group();
+    const stem = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.008, 0.011, 0.32, 5),
+      new THREE.MeshStandardMaterial({ color: 0x234233, roughness: 0.7 })
+    );
+    stem.position.y = 0.16;
+    const head = new THREE.Mesh(
+      new THREE.SphereGeometry(0.05, 10, 8),
+      new THREE.MeshStandardMaterial({
+        color: 0xf4f0e4,
+        roughness: 0.42,
+        emissive: new THREE.Color(0x3a3428),
+        emissiveIntensity: 0.55
+      })
+    );
+    head.position.y = 0.34;
+    g.add(stem, head);
+    g.position.set(x, 0, z);
+    wishWorld.add(g);
+  }
+  [[-2.1, 1.15], [2.15, 0.7], [1.05, -2.2], [-1.35, 2.05], [2.9, -1.4], [-2.8, -1.1]].forEach(function (p) {
+    moonflower(p[0], p[1]);
+  });
+
+  const mistTex = canvasTex(256, 256, function (g, w, h) {
+    const grd = g.createRadialGradient(w / 2, h / 2, 8, w / 2, h / 2, w / 2);
+    grd.addColorStop(0, 'rgba(198, 208, 220, 0.42)');
+    grd.addColorStop(1, 'rgba(198, 208, 220, 0)');
+    g.fillStyle = grd;
+    g.fillRect(0, 0, w, h);
+  });
+  const mistMat = new THREE.MeshBasicMaterial({
+    map: mistTex,
+    transparent: true,
+    depthWrite: false,
+    opacity: 0.28,
+    toneMapped: false
+  });
+  const pool = new THREE.Mesh(
+    new THREE.CircleGeometry(3.6, 40),
+    new THREE.MeshBasicMaterial({
+      map: mistTex,
+      color: 0xb7c6de,
+      transparent: true,
+      depthWrite: false,
+      opacity: 0.16,
+      blending: THREE.AdditiveBlending,
+      toneMapped: false
+    })
+  );
+  pool.rotation.x = -Math.PI / 2;
+  pool.position.set(0, 0.045, -0.2);
+  wishWorld.add(pool);
+  [[-2.7, 0.15], [2.8, -0.2], [0.2, -2.7], [-1.4, 2.5]].forEach(function (p) {
+    const mist = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 1.15), mistMat);
+    mist.rotation.x = -Math.PI / 2;
+    mist.position.set(p[0], 0.07, p[1]);
+    wishWorld.add(mist);
+  });
 
   const bats = [];
   const batShape = new THREE.Shape();
@@ -1449,7 +1843,7 @@
   }
 
   // fw-dhea — reddish-violet shells after the wish. One gathers into her name.
-  const FW_MAX = 640;
+  const FW_MAX = 960;
   const fwPos = new Float32Array(FW_MAX * 3);
   const fwCol = new Float32Array(FW_MAX * 3);
   const fwAlpha = new Float32Array(FW_MAX);
@@ -1586,7 +1980,7 @@
     g.font = fwFace();
     g.fillStyle = '#fff';
     g.strokeStyle = '#fff';
-    g.lineWidth = 8;
+    g.lineWidth = 16;
     g.lineJoin = 'round';
     g.textAlign = 'center';
     g.textBaseline = 'middle';
@@ -1594,9 +1988,9 @@
     g.fillText('Dhea', W / 2, H * 0.58);
     const data = g.getImageData(0, 0, W, H).data;
     const raw = [];
-    for (let y = 1; y < H; y += 2) {
-      for (let x = 1; x < W; x += 2) {
-        if (data[(y * W + x) * 4 + 3] > 120) raw.push(x, y);
+    for (let y = 1; y < H; y += 1) {
+      for (let x = 1; x < W; x += 1) {
+        if (data[(y * W + x) * 4 + 3] > 90) raw.push(x, y);
       }
     }
     if (raw.length < 20) return null;
@@ -1610,7 +2004,7 @@
     }
     const bw = Math.max(1, maxX - minX);
     const bh = Math.max(1, maxY - minY);
-    const cap = reduced ? 140 : 320;
+    const cap = reduced ? 180 : 520;
     const pairs = raw.length / 2;
     const stride = Math.max(1, Math.ceil(pairs / cap));
     const pts = [];
@@ -1618,8 +2012,8 @@
       pts.push((raw[i * 2] - minX) / bw - 0.5);
       pts.push(-((raw[i * 2 + 1] - minY) / bh - 0.5));
     }
-    const wordW = 2.02;
-    return { pts: pts, w: wordW, h: Math.min(0.88, wordW * (bh / bw)) };
+    const wordW = 2.16;
+    return { pts: pts, w: wordW, h: Math.min(1.12, wordW * (bh / bw)) };
   }
 
   function fwShell(spec, pal, n, speed, life, size) {
@@ -1668,45 +2062,102 @@
     if (fwBuilt) return;
     fwBuilt = true;
     const shells = [
-      { t: 0.28, x: -2.5, y: 2.62, z: -6.85, n: reduced ? 24 : 58, pal: FW_WINE, speed: 1.7, life: 2.45, size: 6.2, freq: 820 },
-      { t: 0.86, x: -2.75, y: 3.02, z: -7.15, n: reduced ? 0 : 40, pal: FW_ROSE, speed: 1.5, life: 2.2, size: 5.8, freq: 1100 },
-      { t: 2.45, x: -1.95, y: 2.38, z: -6.6, n: reduced ? 16 : 46, pal: FW_VIOLET, speed: 1.55, life: 2.4, size: 6.0, freq: 740 },
-      { t: 3.25, x: 3.15, y: 2.95, z: -6.55, n: reduced ? 0 : 28, pal: FW_WINE, speed: 1.35, life: 2.05, size: 5.2, freq: 1280 },
-      { t: 4.4, x: -2.2, y: 2.08, z: -6.4, n: reduced ? 0 : 24, pal: FW_ROSE, speed: 1.3, life: 2.0, size: 5.0, freq: 960 }
+      { t: 0.28, x: -2.5, y: 2.62, z: -6.85, n: reduced ? 24 : 58, pal: FW_WINE, speed: 1.7, life: 2.45, size: 6.2, freq: 880 },
+      { t: 0.86, x: -2.75, y: 3.02, z: -7.15, n: reduced ? 0 : 40, pal: FW_ROSE, speed: 1.5, life: 2.2, size: 5.8, freq: 1046.5 },
+      { t: 2.45, x: -1.95, y: 2.38, z: -6.6, n: reduced ? 16 : 46, pal: FW_VIOLET, speed: 1.55, life: 2.4, size: 6.0, freq: 783.99 },
+      { t: 3.25, x: -3.05, y: 2.55, z: -6.9, n: reduced ? 0 : 28, pal: FW_WINE, speed: 1.35, life: 2.05, size: 5.2, freq: 1174.66 },
+      { t: 4.4, x: -2.2, y: 2.08, z: -6.4, n: reduced ? 0 : 24, pal: FW_ROSE, speed: 1.3, life: 2.0, size: 5.0, freq: 987.77 }
     ];
     shells.forEach(function (s) {
       if (!s.n) return;
       fwShell(s, s.pal, s.n, s.speed, s.life, s.size);
     });
-    const name = { t: reduced ? 0.35 : 1.32, x: 2.45, y: 1.98, z: -6.0, gain: 0.05, freq: 1460 };
-    const rise = reduced ? 0.01 : 0.72;
-    fwShell(name, FW_ROSE, reduced ? 14 : 32, 1.25, 1.7, 4.4);
-    const glyph = fwSampleName();
-    const born = name.t + rise;
-    if (glyph) {
-      for (let i = 0; i < glyph.pts.length; i += 2) {
-        const ang = Math.random() * Math.PI * 2;
-        const rad = Math.random() * 0.46;
-        const k = Math.random();
-        const col = k < 0.22 ? fwTint(FW_WINE) : [1, 0.44 + k * 0.36, 0.58 + k * 0.28];
-        fwAlloc({
-          kind: 3,
-          birth: born,
-          max: reduced ? 2.3 : 4.55,
-          x0: name.x + Math.cos(ang) * rad,
-          y0: name.y + (Math.random() - 0.35) * rad,
-          z0: name.z + Math.sin(ang) * rad * 0.35,
-          x1: name.x + glyph.pts[i] * glyph.w,
-          y1: name.y + glyph.pts[i + 1] * glyph.h,
-          z1: name.z,
-          size: reduced ? 3.1 : 3.15,
-          r: col[0], g: col[1], b: col[2],
-          seed: Math.random() * 40
-        });
-      }
-    }
+    const name = { t: reduced ? 0.35 : 1.32, x: 1.55, y: 2.48, z: -6.35, gain: 0.05, freq: 1174.66 };
+    const rise = reduced ? 0.01 : 0.55;
+    fwShell(name, FW_ROSE, reduced ? 10 : 22, 1.05, 1.15, 3.2);
+    fwWord = fwMakeWord(name.x, name.y, name.z, name.t + rise);
     fwGeo.attributes.color.needsUpdate = true;
     fwGeo.setDrawRange(0, fwSparks.length);
+  }
+
+  let fwWord = null;
+  function fwMakeWord(x, y, z, born) {
+    const W = 768;
+    const H = 320;
+    const c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    const g = c.getContext('2d');
+    g.clearRect(0, 0, W, H);
+    g.font = fwFace();
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.lineJoin = 'round';
+    g.miterLimit = 2;
+    g.lineWidth = 14;
+    g.strokeStyle = 'rgba(42, 8, 20, 0.92)';
+    g.strokeText('Dhea', W / 2, H * 0.58);
+    g.shadowColor = 'rgba(255, 90, 140, 0.9)';
+    g.shadowBlur = 22;
+    g.fillStyle = '#ffc2d2';
+    g.fillText('Dhea', W / 2, H * 0.58);
+    g.shadowBlur = 0;
+    g.fillStyle = '#fff8f6';
+    g.fillText('Dhea', W / 2, H * 0.58);
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const mat = new THREE.SpriteMaterial({
+      map: tex,
+      transparent: true,
+      depthWrite: false,
+      depthTest: false,
+      opacity: 0,
+      toneMapped: false
+    });
+    const sprite = new THREE.Sprite(mat);
+    sprite.position.set(x, y, z);
+    sprite.scale.set(0.15, 0.06, 1);
+    sprite.renderOrder = 6;
+    sprite.userData = { x: x, y: y, z: z, born: born, sx: 1.62 };
+    wishWorld.add(sprite);
+    return sprite;
+  }
+
+  function fwWordStep(time) {
+    if (!fwWord || fwT < 0) return;
+    const age = fwT - fwWord.userData.born;
+    const gather = reduced ? 0.08 : 0.62;
+    const hold = reduced ? 1.05 : 2.35;
+    const fade = reduced ? 0.55 : 1.25;
+    let o = 0;
+    let s = 0.2;
+    if (age >= 0 && age < gather) {
+      const e = 1 - Math.pow(1 - age / gather, 3);
+      o = e;
+      s = 0.28 + 0.72 * e;
+      fwWord.position.set(fwWord.userData.x, fwWord.userData.y, fwWord.userData.z);
+    } else if (age >= gather && age < gather + hold) {
+      const shim = 0.5 + 0.5 * Math.sin(time * 7.5);
+      o = 0.86 + 0.14 * shim;
+      s = 1;
+      fwWord.position.set(
+        fwWord.userData.x + Math.sin(time * 3.1) * 0.01,
+        fwWord.userData.y + Math.cos(time * 4.4) * 0.012,
+        fwWord.userData.z
+      );
+    } else if (age >= gather + hold) {
+      const f = clamp((age - gather - hold) / fade, 0, 1);
+      o = (1 - f) * (1 - f);
+      s = 1 + f * 0.06;
+      fwWord.position.set(
+        fwWord.userData.x,
+        fwWord.userData.y + f * 0.32,
+        fwWord.userData.z
+      );
+    }
+    fwWord.material.opacity = o;
+    const sx = fwWord.userData.sx * s;
+    fwWord.scale.set(sx, sx * (320 / 768), 1);
   }
 
   function fwBegin() {
@@ -1734,11 +2185,12 @@
   function fwStep(dt, time) {
     if (fwT < 0) return;
     fwT += dt;
+    fwWordStep(time);
     for (let p = 0; p < fwPops.length; p++) {
       const pop = fwPops[p];
       if (!pop.heard && fwT >= pop.at) {
         pop.heard = true;
-        audio.burst(0.16, pop.freq, 0.9, pop.gain);
+        audio.ping(pop.freq, pop.gain);
       }
     }
     for (let i = 0; i < fwSparks.length; i++) {
@@ -1787,13 +2239,13 @@
             y += f * 0.2;
             x += Math.sin(s.seed * 6.2) * f * 0.05;
           } else if (g > 0.9) {
-            x += Math.sin(time * 7 + s.seed * 17) * 0.012 + Math.sin(time * 10.4 + s.seed * 5) * 0.006;
-            y += Math.cos(time * 8.2 + s.seed * 11) * 0.01;
+            x += Math.sin(time * 5.5 + s.seed * 17) * 0.0035;
+            y += Math.cos(time * 6.2 + s.seed * 11) * 0.003;
           }
-          const tw = 0.74 + 0.26 * (0.5 + 0.5 * Math.sin(time * 9 + s.seed * 13));
+          const tw = 0.9 + 0.1 * (0.5 + 0.5 * Math.sin(time * 9 + s.seed * 13));
           a = tw * fade;
           if (age < 0.1) a *= age / 0.1;
-          sz = s.size * (1.45 - 0.45 * g);
+          sz = s.size * (1.2 - 0.12 * g);
         }
       }
       if (a <= 0.001) fwPark(i);
@@ -1819,13 +2271,19 @@
     petals.push(m);
   }
   function resetPetal(m, burst) {
-    const spread = burst ? 1.5 : 2.8;
-    m.position.set((Math.random() - 0.5) * spread, burst ? 1.05 + Math.random() * 1.5 : 1.5 + Math.random() * 2.2, -0.15 - Math.random() * 2.2);
-    m.userData.vy = -(0.07 + Math.random() * 0.14);
-    m.userData.spin = 0.2 + Math.random() * 0.55;
+    const spread = burst ? 2.4 : 4.6;
+    m.position.set(
+      (Math.random() - 0.5) * spread,
+      burst ? 1.15 + Math.random() * 1.8 : 1.3 + Math.random() * 3.1,
+      0.4 - Math.random() * 3.6
+    );
+    m.userData.vy = -(0.022 + Math.random() * 0.034);
+    m.userData.spin = 0.12 + Math.random() * 0.28;
     m.userData.phase = Math.random() * 6.28;
-    m.userData.amp = 0.08 + Math.random() * 0.16;
-    m.rotation.set(Math.random() * 0.6, Math.random(), Math.random());
+    m.userData.amp = 0.28 + Math.random() * 0.55;
+    m.userData.flutter = 0.7 + Math.random() * 1.5;
+    m.scale.set(0.45 + Math.random() * 0.28, 0.72 + Math.random() * 0.4, 1);
+    m.rotation.set(Math.random() * 0.4, Math.random(), Math.random());
   }
   for (let i = 0; i < (fine ? 28 : 14); i++) spawnPetal();
   for (let i = 0; i < 7; i++) {
@@ -1943,7 +2401,7 @@
     flash.classList.remove('go');
     void flash.offsetWidth;
     flash.classList.add('go');
-    setTimeout(cutToWish, reduced ? 280 : 520);
+    setTimeout(cutToWish, reduced ? 280 : 1080);
   }
 
   function cutToWish() {
@@ -1963,24 +2421,27 @@
     spot.intensity = 0.38;
     scene.background.set(0x070910);
     scene.fog.color.set(0x10141c);
-    scene.fog.density = 0.04;
+    scene.fog.density = 0.028;
     hemi.color.set(0x93a8c4);
     hemi.groundColor.set(0x160e14);
     hemi.intensity = 0.4;
     document.body.classList.add('sanctum');
     shot = shots.sanctum;
+    viewOrbit.yaw = 0;
+    viewOrbit.pitch = 0;
+    viewOrbit.dist = 1;
     applyFraming();
     camAnchor.copy(framed);
-    camAnchor.y += 0.5;
-    camAnchor.z += 0.92;
+    camAnchor.y += 0.72;
+    camAnchor.z += 1.45;
     camera.position.copy(camAnchor);
     look.set(shot.lx, shot.ly, shot.lz);
     lookSm.copy(look);
     arriveT = 0;
-    arriveDur = reduced ? 0.3 : 2.2;
+    arriveDur = reduced ? 0.35 : 3.7;
     arriving = true;
     phase = 'wish';
-    setTimeout(function () { if (phase === 'wish') wishUI.classList.add('show'); }, reduced ? 80 : 1100);
+    setTimeout(function () { if (phase === 'wish') wishUI.classList.add('show'); }, reduced ? 80 : 2500);
   }
 
   function celebrate() {
@@ -2053,12 +2514,23 @@
     const box = viewportBox();
     ndc.x = ((p.clientX - box.x) / box.w) * 2 - 1;
     ndc.y = -((p.clientY - box.y) / box.h) * 2 + 1;
+    if (e.pointerId != null) orbitPointers.set(e.pointerId, { x: p.clientX, y: p.clientY });
+    if (orbitPointers.size >= 2 && phase !== 'reading' && phase !== 'reread') {
+      holding = false;
+      drag = null;
+      const span = twoPointerSpan();
+      orbitDrag = { mode: 'pinch', x: span.x, y: span.y, dist: span.dist };
+      return;
+    }
     if (phase === 'prelude') dismissPrelude();
     if (phase === 'sealed') {
       pointer.copy(ndc);
       raycaster.setFromCamera(pointer, camera);
       const hits = raycaster.intersectObject(envelope, true);
-      if (!hits.length) return;
+      if (!hits.length) {
+        orbitDrag = { mode: 'orbit', x: p.clientX, y: p.clientY };
+        return;
+      }
       audio.ensure();
       drag = { y: p.clientY, x: p.clientX, t: performance.now() };
       phase = 'dragging';
@@ -2066,6 +2538,8 @@
     } else if (phase === 'wish') {
       holding = true;
       audio.ensure();
+    } else if (phase === 'celebrated') {
+      orbitDrag = { mode: 'orbit', x: p.clientX, y: p.clientY };
     }
   });
 
@@ -2074,6 +2548,27 @@
     const box = viewportBox();
     ndc.x = ((p.clientX - box.x) / box.w) * 2 - 1;
     ndc.y = -((p.clientY - box.y) / box.h) * 2 + 1;
+    if (e.pointerId != null && orbitPointers.has(e.pointerId)) {
+      orbitPointers.set(e.pointerId, { x: p.clientX, y: p.clientY });
+    }
+    if (orbitDrag && orbitDrag.mode === 'pinch') {
+      const span = twoPointerSpan();
+      if (span) {
+        viewOrbit.dist *= orbitDrag.dist / span.dist;
+        viewOrbit.yaw -= (span.x - orbitDrag.x) * 0.0052;
+        viewOrbit.pitch -= (span.y - orbitDrag.y) * 0.004;
+        clampOrbit();
+        orbitDrag.dist = span.dist;
+        orbitDrag.x = span.x;
+        orbitDrag.y = span.y;
+      }
+    } else if (orbitDrag && orbitDrag.mode === 'orbit') {
+      viewOrbit.yaw -= (p.clientX - orbitDrag.x) * 0.0052;
+      viewOrbit.pitch -= (p.clientY - orbitDrag.y) * 0.004;
+      clampOrbit();
+      orbitDrag.x = p.clientX;
+      orbitDrag.y = p.clientY;
+    }
     if (fine) {
       cur.style.left = p.clientX + 'px';
       cur.style.top = p.clientY + 'px';
@@ -2096,6 +2591,9 @@
 
   function endDrag(e) {
     holding = false;
+    if (e && e.pointerId != null) orbitPointers.delete(e.pointerId);
+    if (orbitPointers.size < 2 && orbitDrag && orbitDrag.mode === 'pinch') orbitDrag = null;
+    if (orbitDrag && orbitDrag.mode === 'orbit') orbitDrag = null;
     if (phase !== 'dragging' || !drag) return;
     const p = eventPoint(e);
     const moved = Math.hypot(p.clientX - drag.x, p.clientY - drag.y);
@@ -2125,6 +2623,13 @@
   window.addEventListener('keyup', function (e) {
     if (e.code === 'Space') holding = false;
   });
+
+  window.addEventListener('wheel', function (e) {
+    if (phase === 'reading' || phase === 'reread') return;
+    e.preventDefault();
+    viewOrbit.dist *= Math.exp(e.deltaY * 0.0011);
+    clampOrbit();
+  }, { passive: false });
 
   $('makewish').addEventListener('click', function (e) {
     e.stopPropagation();
@@ -2165,7 +2670,7 @@
     const oy = base.y - base.ly;
     const oz = base.z - base.lz;
     const len = Math.hypot(ox, oy, oz) || 1;
-    const wide = 1.6;
+    const wide = world === 'sanctum' ? 1.28 : 1.6;
     let fov = baseFov;
     let dist = len;
     if (aspect < 1.5) {
@@ -2176,7 +2681,7 @@
       else {
         fov = cap;
         const tanNow = Math.tan(fov * Math.PI / 360) * Math.max(aspect, 0.38);
-        dist = len * (tanH / tanNow) * 1.06;
+        dist = len * (tanH / tanNow) * (world === 'sanctum' ? 1 : 1.06);
       }
     }
     camera.fov = fov;
@@ -2205,7 +2710,9 @@
     requestAnimationFrame(frame);
     const dt = Math.min(clock.getDelta(), 0.033);
     const time = clock.elapsedTime;
+    audio.pump();
     stepTweens(dt);
+    if (sky.material.uniforms) sky.material.uniforms.uTime.value = time;
 
     if (jobs.length) {
       // emissive pulse jobs write onto plain objects; apply seal glow if a job targets e
@@ -2220,6 +2727,8 @@
     desired.copy(framed);
     desired.x += px;
     desired.y += py * 0.35;
+    look.set(shot.lx + px * 0.35, shot.ly, shot.lz);
+    applyOrbit(desired, look);
     if (arriving) {
       arriveT += dt;
       const k = easeInOutCubic(clamp(arriveT / arriveDur, 0, 1));
@@ -2229,7 +2738,6 @@
     } else {
       camera.position.lerp(desired, 0.055);
     }
-    look.set(shot.lx + px * 0.35, shot.ly, shot.lz);
     if (!arriving) lookSm.lerp(look, 0.08);
     camera.lookAt(lookSm);
 
@@ -2290,11 +2798,15 @@
       if (celebrate.moonTween) moonLight.intensity = celebrate.moonTween.v;
 
       petals.forEach(function (p) {
-        p.position.y += p.userData.vy * dt * (celebrated ? 1.15 : 1);
-        p.position.x += Math.sin(time * 0.45 + p.userData.phase) * p.userData.amp * dt;
-        p.rotation.z += dt * p.userData.spin * 0.8;
-        p.rotation.x += dt * 0.18;
-        if (p.position.y < 0.06) resetPetal(p, false);
+        const flutter = Math.sin(time * p.userData.flutter + p.userData.phase);
+        const stall = 0.55 + 0.45 * (0.5 + 0.5 * flutter);
+        p.position.y += p.userData.vy * stall * dt * (celebrated ? 1.08 : 1);
+        p.position.x += Math.sin(time * 0.65 + p.userData.phase) * p.userData.amp * dt;
+        p.position.z += Math.cos(time * 0.5 + p.userData.phase * 1.3) * p.userData.amp * 0.4 * dt;
+        p.rotation.z = flutter * 0.9;
+        p.rotation.x = Math.sin(time * 1.15 + p.userData.phase) * 1.15;
+        p.rotation.y += dt * p.userData.spin;
+        if (p.position.y < 0.05) resetPetal(p, false);
       });
 
       smokes.forEach(function (s) {

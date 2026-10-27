@@ -418,6 +418,31 @@
   #mute .slash { display: none; }
   #mute.muted .waves { opacity: 0; }
   #mute.muted .slash { display: block; }
+  #restart, #skybtn {
+    position: fixed;
+    z-index: 12;
+    bottom: calc(0.85rem + env(safe-area-inset-bottom));
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1px solid rgba(231, 211, 164, 0.35);
+    background: rgba(8, 2, 6, 0.42);
+    color: var(--gold);
+    font-family: Cinzel, Palatino, serif;
+    font-size: 1.05rem;
+    line-height: 1;
+    padding: 0;
+    display: grid;
+    place-items: center;
+  }
+  #restart { left: calc(0.9rem + env(safe-area-inset-left)); }
+  #skybtn {
+    right: calc(0.9rem + env(safe-area-inset-right));
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+  }
+  #skybtn.show { opacity: 1; pointer-events: auto; }
   #cur {
     position: fixed;
     z-index: 30;
@@ -452,7 +477,7 @@
   }
   [hidden] { display: none !important; }
   @media (pointer: coarse) {
-    #mute { width: 44px; height: 44px; }
+    #mute, #restart, #skybtn { width: 44px; height: 44px; }
     #makewish, #back { width: 104px; height: 104px; }
   }
   @media (max-width: 420px) {
@@ -535,6 +560,8 @@
     <p class="script">buttercup</p>
     <button type="button" id="reread">The letter</button>
   </div>
+  <button id="restart" type="button" aria-label="Start again">↺</button>
+  <button id="skybtn" type="button" aria-label="Send fireworks">✦</button>
   <button id="mute" type="button" aria-label="Sound">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
       <path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor" stroke="none"></path>
@@ -651,7 +678,7 @@
       const ctx = new Ctx();
       this.ctx = ctx;
       const master = ctx.createGain();
-      master.gain.value = this.muted ? 0 : 0.85;
+      master.gain.value = this.muted ? 0 : 0.4;
       master.connect(ctx.destination);
       this.master = master;
 
@@ -702,76 +729,76 @@
       src.start();
     },
     crack: function () {
-      this.burst(0.16, 1600, 0.55, 0.32);
+      this.burst(0.22, 480, 0.5, 0.045);
       if (!this.ctx) return;
       const ctx = this.ctx;
       const o = ctx.createOscillator();
       o.type = 'sine';
       const t = ctx.currentTime;
-      o.frequency.setValueAtTime(160, t);
-      o.frequency.exponentialRampToValueAtTime(42, t + 0.14);
+      o.frequency.setValueAtTime(96, t);
+      o.frequency.exponentialRampToValueAtTime(46, t + 0.22);
       const g = ctx.createGain();
-      g.gain.setValueAtTime(0.28, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+      g.gain.setValueAtTime(0.05, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
       o.connect(g);
       g.connect(this.master);
       o.start(t);
-      o.stop(t + 0.18);
+      o.stop(t + 0.28);
     },
-    paper: function () { this.burst(0.45, 2800, 0.4, 0.07); },
-    whoosh: function () { this.burst(0.7, 420, 0.3, 0.16); },
+    paper: function () { this.burst(0.5, 640, 0.35, 0.016); },
+    whoosh: function () { this.burst(0.9, 220, 0.28, 0.03); },
     chime: function () {
       if (!this.ctx) return;
       const ctx = this.ctx;
-      [587.33, 698.46, 880, 1174.66].forEach(function (f, i) {
+      [587.33, 698.46, 880].forEach(function (f, i) {
         const o = ctx.createOscillator();
         o.type = 'sine';
         o.frequency.value = f;
         const g = ctx.createGain();
-        const t = ctx.currentTime + i * 0.09;
+        const t = ctx.currentTime + i * 0.16;
         g.gain.setValueAtTime(0.0001, t);
-        g.gain.exponentialRampToValueAtTime(0.05, t + 0.04);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 2.6);
+        g.gain.exponentialRampToValueAtTime(0.016, t + 0.18);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 3.4);
         o.connect(g);
         g.connect(audio.master);
         o.start(t);
-        o.stop(t + 2.7);
+        o.stop(t + 3.5);
       });
     },
     setWind: function (v) {
       if (!this.wind || !this.ctx) return;
-      this.wind.gain.setTargetAtTime(v * 0.12, this.ctx.currentTime, 0.08);
+      this.wind.gain.setTargetAtTime(v * 0.035, this.ctx.currentTime, 0.12);
     },
-    // D minor, slow. A music-box line over soft chords. Same key as the wish chime.
+    // soothe-bed — same D minor line, warm and quiet.
     loop: 12.4,
     score: [
-      { t: 0.00, f: 293.66, d: 0.78, g: 0.07, wave: 'triangle', cut: 2200 },
-      { t: 0.72, f: 349.23, d: 0.58, g: 0.06, wave: 'triangle', cut: 2200 },
-      { t: 1.32, f: 440.00, d: 0.86, g: 0.064, wave: 'triangle', cut: 2400 },
-      { t: 2.24, f: 392.00, d: 0.62, g: 0.055, wave: 'triangle', cut: 2200 },
-      { t: 2.90, f: 349.23, d: 0.52, g: 0.05, wave: 'triangle', cut: 2000 },
-      { t: 3.46, f: 329.63, d: 0.74, g: 0.055, wave: 'triangle', cut: 2000 },
-      { t: 4.28, f: 293.66, d: 1.15, g: 0.066, wave: 'triangle', cut: 2000 },
-      { t: 5.55, f: 261.63, d: 0.52, g: 0.046, wave: 'triangle', cut: 1800 },
-      { t: 6.12, f: 293.66, d: 0.56, g: 0.052, wave: 'triangle', cut: 2000 },
-      { t: 6.72, f: 349.23, d: 0.72, g: 0.058, wave: 'triangle', cut: 2200 },
-      { t: 7.52, f: 440.00, d: 0.64, g: 0.058, wave: 'triangle', cut: 2400 },
-      { t: 8.22, f: 523.25, d: 0.7, g: 0.05, wave: 'triangle', cut: 2600 },
-      { t: 9.00, f: 493.88, d: 0.55, g: 0.046, wave: 'triangle', cut: 2400 },
-      { t: 9.60, f: 440.00, d: 0.82, g: 0.054, wave: 'triangle', cut: 2200 },
-      { t: 10.50, f: 349.23, d: 1.35, g: 0.06, wave: 'triangle', cut: 2000 },
-      { t: 0.00, f: 146.83, d: 2.3, g: 0.04, wave: 'sine', cut: 640 },
-      { t: 0.00, f: 220.00, d: 2.3, g: 0.026, wave: 'sine', cut: 700 },
-      { t: 0.00, f: 174.61, d: 2.3, g: 0.022, wave: 'sine', cut: 760 },
-      { t: 3.46, f: 146.83, d: 2.1, g: 0.034, wave: 'sine', cut: 640 },
-      { t: 3.46, f: 196.00, d: 2.1, g: 0.02, wave: 'sine', cut: 700 },
-      { t: 3.46, f: 233.08, d: 2.1, g: 0.018, wave: 'sine', cut: 760 },
-      { t: 6.72, f: 130.81, d: 2.2, g: 0.034, wave: 'sine', cut: 560 },
-      { t: 6.72, f: 196.00, d: 2.2, g: 0.02, wave: 'sine', cut: 680 },
-      { t: 6.72, f: 261.63, d: 2.0, g: 0.016, wave: 'sine', cut: 800 },
-      { t: 10.05, f: 146.83, d: 2.15, g: 0.038, wave: 'sine', cut: 640 },
-      { t: 10.05, f: 220.00, d: 2.15, g: 0.022, wave: 'sine', cut: 720 },
-      { t: 10.05, f: 293.66, d: 2.0, g: 0.016, wave: 'sine', cut: 860 }
+      { t: 0.00, f: 293.66, d: 0.9, g: 0.028, wave: 'sine', cut: 1100 },
+      { t: 0.72, f: 349.23, d: 0.7, g: 0.024, wave: 'sine', cut: 1100 },
+      { t: 1.32, f: 440.00, d: 0.95, g: 0.026, wave: 'sine', cut: 1200 },
+      { t: 2.24, f: 392.00, d: 0.72, g: 0.022, wave: 'sine', cut: 1100 },
+      { t: 2.90, f: 349.23, d: 0.62, g: 0.02, wave: 'sine', cut: 1000 },
+      { t: 3.46, f: 329.63, d: 0.85, g: 0.022, wave: 'sine', cut: 1000 },
+      { t: 4.28, f: 293.66, d: 1.25, g: 0.026, wave: 'sine', cut: 1000 },
+      { t: 5.55, f: 261.63, d: 0.62, g: 0.018, wave: 'sine', cut: 900 },
+      { t: 6.12, f: 293.66, d: 0.66, g: 0.02, wave: 'sine', cut: 1000 },
+      { t: 6.72, f: 349.23, d: 0.82, g: 0.022, wave: 'sine', cut: 1100 },
+      { t: 7.52, f: 440.00, d: 0.74, g: 0.022, wave: 'sine', cut: 1200 },
+      { t: 8.22, f: 523.25, d: 0.8, g: 0.018, wave: 'sine', cut: 1280 },
+      { t: 9.00, f: 493.88, d: 0.65, g: 0.018, wave: 'sine', cut: 1100 },
+      { t: 9.60, f: 440.00, d: 0.92, g: 0.022, wave: 'sine', cut: 1100 },
+      { t: 10.50, f: 349.23, d: 1.45, g: 0.024, wave: 'sine', cut: 1000 },
+      { t: 0.00, f: 146.83, d: 2.5, g: 0.016, wave: 'sine', cut: 480 },
+      { t: 0.00, f: 220.00, d: 2.5, g: 0.01, wave: 'sine', cut: 520 },
+      { t: 0.00, f: 174.61, d: 2.5, g: 0.008, wave: 'sine', cut: 540 },
+      { t: 3.46, f: 146.83, d: 2.3, g: 0.014, wave: 'sine', cut: 480 },
+      { t: 3.46, f: 196.00, d: 2.3, g: 0.008, wave: 'sine', cut: 520 },
+      { t: 3.46, f: 233.08, d: 2.3, g: 0.007, wave: 'sine', cut: 540 },
+      { t: 6.72, f: 130.81, d: 2.4, g: 0.014, wave: 'sine', cut: 420 },
+      { t: 6.72, f: 196.00, d: 2.4, g: 0.008, wave: 'sine', cut: 500 },
+      { t: 6.72, f: 261.63, d: 2.2, g: 0.006, wave: 'sine', cut: 560 },
+      { t: 10.05, f: 146.83, d: 2.3, g: 0.015, wave: 'sine', cut: 480 },
+      { t: 10.05, f: 220.00, d: 2.3, g: 0.008, wave: 'sine', cut: 520 },
+      { t: 10.05, f: 293.66, d: 2.2, g: 0.006, wave: 'sine', cut: 600 }
     ],
     playNote: function (t, ev) {
       if (!this.ctx || !this.master) return;
@@ -783,9 +810,10 @@
       filter.type = 'lowpass';
       filter.frequency.setValueAtTime(ev.cut || 2000, t);
       const g = ctx.createGain();
+      const atk = Math.min(ev.attack || 0.18, Math.max(0.045, ev.d * 0.42));
       g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(Math.max(0.0002, ev.g), t + 0.028);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(0.08, ev.d));
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002, ev.g), t + atk);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(0.12, ev.d));
       o.connect(filter);
       filter.connect(g);
       g.connect(this.master);
@@ -794,7 +822,7 @@
     },
     ping: function (freq, gain) {
       if (!this.ctx) return;
-      this.playNote(this.ctx.currentTime, { f: freq, d: 0.38, g: gain || 0.04, wave: 'sine', cut: 3400 });
+      this.playNote(this.ctx.currentTime, { f: freq, d: 0.9, g: gain || 0.011, wave: 'sine', cut: 1100, attack: 0.08 });
     },
     pump: function () {
       if (!this.ctx || this.started == null) return;
@@ -829,12 +857,12 @@
     muteBtn.classList.toggle('muted', audio.muted);
     muteBtn.setAttribute('aria-label', audio.muted ? 'Sound is off' : 'Sound is on');
     if (audio.master && audio.ctx) {
-      audio.master.gain.setTargetAtTime(audio.muted ? 0 : 0.85, audio.ctx.currentTime, 0.05);
+      audio.master.gain.setTargetAtTime(audio.muted ? 0 : 0.4, audio.ctx.currentTime, 0.05);
     }
   });
   document.addEventListener('visibilitychange', function () {
     if (!audio.master || !audio.ctx) return;
-    const on = document.hidden || audio.muted ? 0 : 0.85;
+    const on = document.hidden || audio.muted ? 0 : 0.4;
     audio.master.gain.setTargetAtTime(on, audio.ctx.currentTime, 0.08);
   });
 
@@ -1096,8 +1124,9 @@
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, fine ? 1.75 : 1.35));
 
   const shots = {
-    study: { x: 0, y: 1.86, z: 3.78, lx: 0, ly: 0.16, lz: 0 },
-    sanctum: { x: 0, y: 1.78, z: 4.55, lx: 0, ly: 1.22, lz: -0.5 }
+    study: { x: 0, y: 1.86, z: 3.78, lx: 0, ly: 0.16, lz: 0, fov: 30, wide: 1.6 },
+    sanctum: { x: 0, y: 1.78, z: 4.55, lx: 0, ly: 1.22, lz: -0.5, fov: 36, wide: 1.28 },
+    sky: { x: 0.02, y: 1.32, z: 3.25, lx: 0, ly: 2.75, lz: -4.35, fov: 40, wide: 1.08, pull: 0.78 }
   };
   const viewOrbit = { yaw: 0, pitch: 0, dist: 1 };
   const orbitPointers = new Map();
@@ -1122,8 +1151,8 @@
   }
   function clampOrbit() {
     viewOrbit.yaw = clamp(viewOrbit.yaw, -0.95, 0.95);
-    viewOrbit.pitch = clamp(viewOrbit.pitch, -0.42, 0.5);
-    viewOrbit.dist = clamp(viewOrbit.dist, 0.56, 1.42);
+    viewOrbit.pitch = clamp(viewOrbit.pitch, -0.7, 0.7);
+    viewOrbit.dist = clamp(viewOrbit.dist, 0.48, 1.6);
   }
   function twoPointerSpan() {
     if (orbitPointers.size < 2) return null;
@@ -1439,17 +1468,31 @@
     return g;
   }
 
-  const deskRose = makeRose(1);
-  deskRose.rotation.set(0.4, 0.5, Math.PI / 2.15);
-  deskRose.position.set(1.12, 0.08, 0.92);
+  const deskRose = new THREE.Group();
+  const bloom = makeRose(1.35);
+  bloom.position.y = 0.04;
+  bloom.rotation.set(-0.35, 0.4, 0);
+  deskRose.add(bloom);
+  const stemMat = new THREE.MeshStandardMaterial({ color: 0x1c3a22, roughness: 0.72 });
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.016, 0.72, 7), stemMat);
+  stem.rotation.z = Math.PI / 2;
+  stem.position.set(0.34, -0.02, 0.03);
+  deskRose.add(stem);
+  const leafShape = new THREE.Shape();
+  leafShape.moveTo(0, 0);
+  leafShape.quadraticCurveTo(0.07, 0.05, 0.01, 0.16);
+  leafShape.quadraticCurveTo(-0.06, 0.05, 0, 0);
+  const leafGeo = new THREE.ShapeGeometry(leafShape);
+  const leafMat = new THREE.MeshStandardMaterial({ color: 0x2a5a3c, roughness: 0.72, side: THREE.DoubleSide });
+  [[0.22, -0.01, 0.06, -0.6, 0.4], [0.4, -0.015, -0.02, 0.5, -0.8]].forEach(function (lf) {
+    const leaf = new THREE.Mesh(leafGeo, leafMat);
+    leaf.position.set(lf[0], lf[1], lf[2]);
+    leaf.rotation.set(-1.1, lf[3], lf[4]);
+    deskRose.add(leaf);
+  });
+  deskRose.position.set(0.78, 0.1, 0.48);
+  deskRose.rotation.y = 0.65;
   deskWorld.add(deskRose);
-  const stem = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.012, 0.014, 0.7, 6),
-    new THREE.MeshStandardMaterial({ color: 0x1c3a22, roughness: 0.7 })
-  );
-  stem.rotation.z = Math.PI / 2.15;
-  stem.position.set(1.42, 0.04, 1.05);
-  deskWorld.add(stem);
 
   const petalGeo = new THREE.PlaneGeometry(0.16, 0.2);
   const petalMat = new THREE.MeshStandardMaterial({
@@ -1464,7 +1507,7 @@
     const p = new THREE.Mesh(petalGeo, petalMat);
     p.rotation.x = -Math.PI / 2;
     p.rotation.z = Math.random() * 3;
-    p.position.set(0.7 + Math.random() * 0.7, 0.02, 0.55 + Math.random() * 0.5);
+    p.position.set(0.55 + Math.random() * 0.45, 0.025, 0.35 + Math.random() * 0.4);
     p.scale.setScalar(0.7 + Math.random() * 0.5);
     deskWorld.add(p);
   }
@@ -1631,10 +1674,31 @@
         '  float tw = 0.55 + 0.45 * sin(uTime * (0.7 + rnd * 3.4) + rnd * 60.0);',
         '  float above = smoothstep(-0.04, 0.16, n.y);',
         '  float offMoon = 1.0 - smoothstep(0.86, 0.97, moonDot);',
-        '  float dust = step(0.948, rnd) * smoothstep(0.055, 0.0, length(f));',
-        '  float bright = step(0.988, hash(cell + 2.7)) * smoothstep(0.09, 0.0, length(f));',
-        '  col += vec3(0.86, 0.9, 1.0) * dust * tw * above * offMoon * 1.25;',
-        '  col += vec3(1.0, 0.93, 0.78) * bright * (0.7 + 0.3 * tw) * above * offMoon * 1.4;',
+        '  float dust = step(0.875, rnd) * smoothstep(0.045, 0.0, length(f));',
+        '  float bright = step(0.972, hash(cell + 2.7)) * smoothstep(0.07, 0.0, length(f));',
+        '  vec3 cell2 = floor(n * 220.0);',
+        '  vec3 f2 = fract(n * 220.0) - 0.5;',
+        '  float rnd2 = hash(cell2 + 3.1);',
+        '  float fineStar = step(0.972, rnd2) * smoothstep(0.035, 0.0, length(f2));',
+        '  col += vec3(0.9, 0.93, 1.0) * dust * tw * above * offMoon * 1.65;',
+        '  col += vec3(1.0, 0.94, 0.82) * bright * (0.75 + 0.25 * tw) * above * offMoon * 1.7;',
+        '  col += vec3(0.82, 0.88, 1.0) * fineStar * above * offMoon * 1.15;',
+        '  float trip = floor(uTime / 8.0);',
+        '  float su = fract(uTime / 8.0);',
+        '  float fly = smoothstep(0.0, 0.008, su) * (1.0 - smoothstep(0.065, 0.1, su));',
+        '  float sp = clamp(su / 0.085, 0.0, 1.0);',
+        '  float h1 = hash(vec3(trip, 1.7, 4.2));',
+        '  float h2 = hash(vec3(trip, 9.1, 2.2));',
+        '  vec3 sa = normalize(vec3(-0.72 + h1 * 0.35, 0.48 + h2 * 0.34, -0.4));',
+        '  vec3 sb = normalize(vec3(0.58 + h2 * 0.2, 0.28 + h1 * 0.25, -0.55));',
+        '  vec3 head = normalize(mix(sa, sb, sp));',
+        '  vec3 sdir = normalize(sb - sa);',
+        '  float behind = dot(n - head, -sdir);',
+        '  vec3 closest = head - sdir * clamp(behind, 0.0, 0.18);',
+        '  float sd = length(n - closest);',
+        '  float streak = smoothstep(0.012, 0.0, sd) * smoothstep(0.18, 0.02, max(behind, 0.0));',
+        '  float headDot = smoothstep(0.018, 0.0, length(n - head));',
+        '  col += vec3(0.96, 0.95, 1.0) * (streak * 0.9 + headDot * 1.15) * fly * above * offMoon;',
         '  gl_FragColor = vec4(col, 1.0);',
         '}'
       ].join('\n')
@@ -1745,8 +1809,11 @@
   cypress(-2.2, -6.25, 1.85);
   cypress(2.45, -6.05, 2.15);
   cypress(3.35, -5.4, 2.7);
+  cypress(-4.3, -4.4, 2.05);
+  cypress(4.2, -4.65, 2.2);
+  cypress(0.2, -7.55, 1.6);
 
-  [[-2.45, 0.85, 0.55], [2.5, 0.35, 0.48], [0.55, -2.45, 0.42], [-0.9, 2.35, 0.5]].forEach(function (p) {
+  [[-2.45, 0.85, 0.55], [2.5, 0.35, 0.48], [0.55, -2.45, 0.42], [-0.9, 2.35, 0.5], [-3.4, -0.6, 0.46], [3.2, 1.2, 0.5], [-1.6, -2.9, 0.4], [1.9, 2.6, 0.44], [-3.8, 1.75, 0.38]].forEach(function (p) {
     const rose = makeRose(p[2]);
     rose.position.set(p[0], 0.02, p[1]);
     rose.rotation.x = 0.15;
@@ -1774,9 +1841,29 @@
     g.position.set(x, 0, z);
     wishWorld.add(g);
   }
-  [[-2.1, 1.15], [2.15, 0.7], [1.05, -2.2], [-1.35, 2.05], [2.9, -1.4], [-2.8, -1.1]].forEach(function (p) {
+  [[-2.1, 1.15], [2.15, 0.7], [1.05, -2.2], [-1.35, 2.05], [2.9, -1.4], [-2.8, -1.1], [-3.6, 0.4], [3.5, -0.8], [0.4, 2.9], [-0.7, -3.15], [4.0, 1.8]].forEach(function (p) {
     moonflower(p[0], p[1]);
   });
+
+  function fern(x, z, s) {
+    const g = new THREE.Group();
+    const mat = new THREE.MeshStandardMaterial({ color: 0x1c382c, roughness: 0.86, side: THREE.DoubleSide });
+    for (let i = 0; i < 5; i++) {
+      const fr = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.46), mat);
+      fr.position.y = 0.22;
+      fr.rotation.y = i * 1.15;
+      fr.rotation.z = (i - 2) * 0.16;
+      g.add(fr);
+    }
+    g.position.set(x, 0, z);
+    g.scale.setScalar(s);
+    wishWorld.add(g);
+  }
+  fern(-3.55, -1.7, 1.05);
+  fern(3.35, 1.45, 0.9);
+  fern(-2.55, 2.85, 0.82);
+  fern(1.7, -3.15, 0.95);
+  fern(4.15, -1.85, 0.78);
 
   const mistTex = canvasTex(256, 256, function (g, w, h) {
     const grd = g.createRadialGradient(w / 2, h / 2, 8, w / 2, h / 2, w / 2);
@@ -1842,8 +1929,8 @@
     bats.push(b);
   }
 
-  // fw-dhea — reddish-violet shells after the wish. One gathers into her name.
-  const FW_MAX = 960;
+  // fw-display-sparks — a wide reddish-violet show. Sparks write her name.
+  const FW_MAX = 2400;
   const fwPos = new Float32Array(FW_MAX * 3);
   const fwCol = new Float32Array(FW_MAX * 3);
   const fwAlpha = new Float32Array(FW_MAX);
@@ -1918,10 +2005,12 @@
   wishWorld.add(fwPoints);
 
   const fwSparks = [];
+  const fwFree = [];
   const fwPops = [];
   let fwT = -1;
   let fwStarted = false;
   let fwBuilt = false;
+  let fwEncoreN = 0;
   const FW_WINE = [[1, 0.28, 0.42], [0.82, 0.12, 0.38], [1, 0.46, 0.55]];
   const FW_ROSE = [[1, 0.55, 0.68], [1, 0.38, 0.52], [0.95, 0.66, 0.76]];
   const FW_VIOLET = [[0.7, 0.34, 1], [0.48, 0.16, 0.82], [0.82, 0.42, 1]];
@@ -1935,18 +2024,17 @@
     ];
   }
 
-  function fwDir(speed, lift) {
-    let x = Math.random() * 2 - 1;
-    let y = Math.random() * 0.75 + lift;
-    let z = Math.random() * 2 - 1;
-    const m = Math.hypot(x, y, z) || 1;
-    return { x: x / m * speed, y: y / m * speed, z: z / m * speed };
-  }
-
   function fwAlloc(s) {
-    if (fwSparks.length >= FW_MAX) return false;
-    const i = fwSparks.length;
-    fwSparks.push(s);
+    let i;
+    if (fwFree.length) {
+      i = fwFree.pop();
+      fwSparks[i] = s;
+    } else {
+      if (fwSparks.length >= FW_MAX) return false;
+      i = fwSparks.length;
+      fwSparks.push(s);
+    }
+    s.dead = false;
     fwCol[i * 3] = s.r;
     fwCol[i * 3 + 1] = s.g;
     fwCol[i * 3 + 2] = s.b;
@@ -1955,6 +2043,7 @@
     fwPos[i * 3] = s.x0;
     fwPos[i * 3 + 1] = -30;
     fwPos[i * 3 + 2] = s.z0;
+    fwGeo.setDrawRange(0, fwSparks.length);
     return true;
   }
 
@@ -1969,91 +2058,195 @@
     return serif;
   }
 
-  function fwSampleName() {
-    const W = 720;
-    const H = 280;
-    const c = document.createElement('canvas');
-    c.width = W;
-    c.height = H;
-    const g = c.getContext('2d');
-    g.clearRect(0, 0, W, H);
-    g.font = fwFace();
-    g.fillStyle = '#fff';
-    g.strokeStyle = '#fff';
-    g.lineWidth = 16;
-    g.lineJoin = 'round';
-    g.textAlign = 'center';
-    g.textBaseline = 'middle';
-    g.strokeText('Dhea', W / 2, H * 0.58);
-    g.fillText('Dhea', W / 2, H * 0.58);
-    const data = g.getImageData(0, 0, W, H).data;
-    const raw = [];
-    for (let y = 1; y < H; y += 1) {
-      for (let x = 1; x < W; x += 1) {
-        if (data[(y * W + x) * 4 + 3] > 90) raw.push(x, y);
+  function fwBlockName() {
+    const pts = [];
+    const letter = [];
+    function stroke(seg, x0, y0, sx, sy, li) {
+      for (let s = 0; s < seg.length - 1; s++) {
+        const a = seg[s];
+        const b = seg[s + 1];
+        const dx = (b[0] - a[0]) * sx;
+        const dy = (b[1] - a[1]) * sy;
+        const len = Math.hypot(dx, dy) || 1;
+        const nx = -dy / len;
+        const ny = dx / len;
+        const steps = Math.max(7, Math.min(12, Math.round(len / 0.028)));
+        for (let i = 0; i <= steps; i++) {
+          const t = i / steps;
+          const px = x0 + (a[0] + (b[0] - a[0]) * t) * sx;
+          const py = y0 + (a[1] + (b[1] - a[1]) * t) * sy;
+          pts.push(px, py);
+          letter.push(li);
+          pts.push(px + nx * 0.016, py + ny * 0.016);
+          letter.push(li);
+        }
       }
     }
-    if (raw.length < 20) return null;
-    let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
-    for (let i = 0; i < raw.length; i += 2) {
-      const x = raw[i], y = raw[i + 1];
-      if (x < minX) minX = x;
-      if (x > maxX) maxX = x;
-      if (y < minY) minY = y;
-      if (y > maxY) maxY = y;
-    }
-    const bw = Math.max(1, maxX - minX);
-    const bh = Math.max(1, maxY - minY);
-    const cap = reduced ? 180 : 520;
-    const pairs = raw.length / 2;
-    const stride = Math.max(1, Math.ceil(pairs / cap));
-    const pts = [];
-    for (let i = 0; i < pairs; i += stride) {
-      pts.push((raw[i * 2] - minX) / bw - 0.5);
-      pts.push(-((raw[i * 2 + 1] - minY) / bh - 0.5));
-    }
-    const wordW = 2.16;
-    return { pts: pts, w: wordW, h: Math.min(1.12, wordW * (bh / bw)) };
+    const sy = 0.42;
+    stroke([[0.02, 0.02], [0.02, 0.98]], -0.46, 0, 0.2, sy, 0);
+    stroke([[0.02, 0.98], [0.42, 1.0], [0.72, 0.78], [0.8, 0.5], [0.7, 0.2], [0.4, 0.02], [0.02, 0.02]], -0.46, 0, 0.2, sy, 0);
+    stroke([[0.08, 0.0], [0.08, 1.22]], -0.16, 0, 0.2, sy, 1);
+    stroke([[0.08, 0.58], [0.36, 0.82], [0.58, 0.58], [0.6, 0.0]], -0.16, 0, 0.2, sy, 1);
+    stroke([[0.12, 0.48], [0.7, 0.48]], 0.12, 0, 0.2, sy, 2);
+    stroke([[0.62, 0.48], [0.74, 0.68], [0.5, 0.86], [0.18, 0.74], [0.08, 0.48], [0.16, 0.2], [0.46, 0.06], [0.7, 0.22]], 0.12, 0, 0.2, sy, 2);
+    stroke([[0.62, 0.7], [0.32, 0.84], [0.1, 0.62], [0.08, 0.36], [0.28, 0.12], [0.55, 0.14], [0.68, 0.36]], 0.4, 0, 0.2, sy, 3);
+    stroke([[0.66, 0.7], [0.7, 0.02]], 0.4, 0, 0.2, sy, 3);
+    return { pts: pts, letter: letter, w: 2.15, h: 1.12 };
   }
 
-  function fwShell(spec, pal, n, speed, life, size) {
-    const rise = reduced ? 0.01 : 0.72;
-    fwPops.push({ at: spec.t + rise, gain: spec.gain || 0.034, freq: spec.freq || 980, heard: false });
-    if (!reduced) {
-      for (let i = 0; i < 7; i++) {
-        const col = fwTint(pal);
-        fwAlloc({
-          kind: 1,
-          t0: spec.t,
-          rise: rise,
-          lag: i * 0.09,
-          x0: spec.x + (Math.random() - 0.5) * 0.04,
-          y0: 1.35,
-          z0: spec.z + 0.42,
-          x1: spec.x,
-          y1: spec.y,
-          z1: spec.z,
-          size: 2.5,
-          r: col[0], g: col[1], b: col[2],
-          seed: Math.random() * 20
-        });
+  function fwSampleName() {
+    try {
+      const letters = ['D', 'h', 'e', 'a'];
+      const W = 180;
+      const H = 260;
+      const c = document.createElement('canvas');
+      c.width = W * 4;
+      c.height = H;
+      const g = c.getContext('2d', { willReadFrequently: true });
+      g.clearRect(0, 0, c.width, c.height);
+      g.font = fwFace();
+      g.lineWidth = 8;
+      g.lineJoin = 'round';
+      g.strokeStyle = '#fff';
+      g.fillStyle = '#fff';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      letters.forEach(function (ch, li) {
+        const x = li * W + W / 2;
+        g.strokeText(ch, x, H * 0.62);
+        g.fillText(ch, x, H * 0.62);
+      });
+      const data = g.getImageData(0, 0, c.width, c.height).data;
+      const cap = reduced ? 36 : 110;
+      const pts = [];
+      const letter = [];
+      const gap = 0.07;
+      const slot = (1 - gap * 3) / 4;
+      for (let li = 0; li < 4; li++) {
+        const raw = [];
+        let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+        for (let y = 1; y < H; y += 2) {
+          for (let x = 1; x < W; x += 2) {
+            const px = li * W + x;
+            if (data[(y * c.width + px) * 4 + 3] > 150) {
+              raw.push(x, y);
+              if (x < minX) minX = x;
+              if (x > maxX) maxX = x;
+              if (y < minY) minY = y;
+              if (y > maxY) maxY = y;
+            }
+          }
+        }
+        const pairs = raw.length / 2;
+        if (pairs < 8) return fwBlockName();
+        const stride = Math.max(1, Math.ceil(pairs / cap));
+        const bw = Math.max(1, maxX - minX);
+        const bh = Math.max(1, maxY - minY);
+        for (let i = 0; i < pairs; i += stride) {
+          const nx = (raw[i * 2] - minX) / bw;
+          const ny = 1 - (raw[i * 2 + 1] - minY) / bh;
+          pts.push(li * (slot + gap) + nx * slot - 0.5);
+          pts.push(ny - 0.5);
+          letter.push(li);
+        }
       }
+      if (pts.length < 48) return fwBlockName();
+      return { pts: pts, letter: letter, w: 2.55, h: 1.08 };
+    } catch (e) {
+      return fwBlockName();
     }
-    for (let i = 0; i < n; i++) {
-      const d = fwDir(speed * (0.45 + Math.random() * 0.7), 0.2);
+  }
+
+  function fwBurstDir(speed, willow) {
+    const x = Math.random() * 2 - 1;
+    const y = willow ? (Math.random() * 0.5 - 0.12) : (Math.random() * 2 - 1);
+    const z = Math.random() * 2 - 1;
+    const m = Math.hypot(x, y, z) || 1;
+    const s = speed * (0.75 + Math.random() * 0.4);
+    return { x: x / m * s, y: y / m * s, z: z / m * s };
+  }
+
+  function fwShell(spec) {
+    const n = spec.n || 0;
+    if (!n) return;
+    const rise = reduced ? 0.01 : (spec.rise || 1.12);
+    const pal = spec.pal;
+    fwPops.push({ at: spec.t + rise, gain: spec.gain || 0.011, freq: spec.freq || 440, heard: false });
+    const trails = reduced ? 0 : (spec.trails != null ? spec.trails : 12);
+    for (let i = 0; i < trails; i++) {
       const col = fwTint(pal);
-      const core = i % 8 === 0;
+      fwAlloc({
+        kind: 1,
+        t0: spec.t,
+        rise: rise,
+        lag: (i / Math.max(1, trails)) * 0.78,
+        x0: (spec.fromX != null ? spec.fromX : 0) + (Math.random() - 0.5) * 0.14,
+        y0: spec.fromY != null ? spec.fromY : 1.12,
+        z0: spec.fromZ != null ? spec.fromZ : 0.22,
+        x1: spec.x, y1: spec.y, z1: spec.z,
+        size: 2.15,
+        r: col[0], g: col[1], b: col[2],
+        seed: Math.random() * 20
+      });
+    }
+    const willow = spec.style === 'willow';
+    const grav = spec.grav != null ? spec.grav : (willow ? 0.58 : 0.2);
+    const drag = spec.drag != null ? spec.drag : (willow ? 0.62 : 0.78);
+    for (let i = 0; i < n; i++) {
+      const d = fwBurstDir(spec.speed || 1.4, willow);
+      const col = fwTint(pal);
       fwAlloc({
         kind: 2,
         birth: spec.t + rise,
-        max: (reduced ? life * 0.55 : life) * (0.75 + Math.random() * 0.45),
+        max: (reduced ? (spec.life || 2.4) * 0.45 : (spec.life || 2.4)) * (0.82 + Math.random() * 0.3),
+        grav: grav,
+        drag: drag,
         x0: spec.x, y0: spec.y, z0: spec.z,
-        vx: d.x * (core ? 0.45 : 1),
-        vy: d.y * (core ? 0.45 : 1),
-        vz: d.z * (core ? 0.45 : 1),
-        size: size * (core ? 1.7 : 0.75 + Math.random() * 0.55),
+        vx: d.x, vy: d.y, vz: d.z,
+        size: (spec.size || 4.2) * (0.82 + Math.random() * 0.35),
         r: col[0], g: col[1], b: col[2],
         seed: Math.random() * 30
+      });
+    }
+  }
+
+  function fwWriteName(cx, cy, cz, t0) {
+    const sampled = fwBlockName();
+    const rise = reduced ? 0.02 : 0.15;
+    fwPops.push({ at: t0 + rise, gain: 0.01, freq: 523.25, heard: false });
+    if (!sampled) return;
+    const n = sampled.pts.length / 2;
+    for (let i = 0; i < n; i++) {
+      const li = sampled.letter[i];
+      const x1 = cx + sampled.pts[i * 2] * sampled.w;
+      const y1 = cy + sampled.pts[i * 2 + 1] * sampled.h;
+      fwAlloc({
+        kind: 3,
+        birth: t0 + rise + li * (reduced ? 0.05 : 0.28),
+        max: reduced ? 2.4 : 5.2,
+        x0: x1 + (Math.random() - 0.5) * 0.07,
+        y0: y1 + (Math.random() - 0.5) * 0.07,
+        z0: cz + (Math.random() - 0.5) * 0.05,
+        x1: x1, y1: y1, z1: cz,
+        size: 2.7 + Math.random() * 0.15,
+        r: 1, g: 0.8, b: 0.86,
+        seed: Math.random() * 40
+      });
+    }
+    if (reduced) return;
+    for (let i = 0; i < 18; i++) {
+      const d = fwBurstDir(0.65, false);
+      fwAlloc({
+        kind: 2,
+        birth: t0 + rise,
+        max: 0.7,
+        grav: 0.16,
+        drag: 1.35,
+        x0: cx, y0: cy, z0: cz,
+        vx: d.x, vy: d.y, vz: d.z,
+        size: 2.15,
+        r: 1, g: 0.72, b: 0.82,
+        seed: Math.random() * 20
       });
     }
   }
@@ -2061,103 +2254,22 @@
   function fwBuild() {
     if (fwBuilt) return;
     fwBuilt = true;
-    const shells = [
-      { t: 0.28, x: -2.5, y: 2.62, z: -6.85, n: reduced ? 24 : 58, pal: FW_WINE, speed: 1.7, life: 2.45, size: 6.2, freq: 880 },
-      { t: 0.86, x: -2.75, y: 3.02, z: -7.15, n: reduced ? 0 : 40, pal: FW_ROSE, speed: 1.5, life: 2.2, size: 5.8, freq: 1046.5 },
-      { t: 2.45, x: -1.95, y: 2.38, z: -6.6, n: reduced ? 16 : 46, pal: FW_VIOLET, speed: 1.55, life: 2.4, size: 6.0, freq: 783.99 },
-      { t: 3.25, x: -3.05, y: 2.55, z: -6.9, n: reduced ? 0 : 28, pal: FW_WINE, speed: 1.35, life: 2.05, size: 5.2, freq: 1174.66 },
-      { t: 4.4, x: -2.2, y: 2.08, z: -6.4, n: reduced ? 0 : 24, pal: FW_ROSE, speed: 1.3, life: 2.0, size: 5.0, freq: 987.77 }
+    const show = [
+      { t: 0.15, x: -4.2, y: 4.6, z: -7.4, style: 'mum', pal: FW_WINE, n: reduced ? 28 : 110, speed: 2.5, life: 2.8, size: 6.0, drag: 0.52, freq: 349.23 },
+      { t: 0.65, x: 4.0, y: 5.4, z: -8.0, style: 'mum', pal: FW_ROSE, n: reduced ? 0 : 100, speed: 2.3, life: 2.6, size: 5.8, drag: 0.55, freq: 440 },
+      { t: 1.2, x: -2.2, y: 6.5, z: -8.5, style: 'willow', pal: FW_VIOLET, n: reduced ? 20 : 90, speed: 1.6, life: 3.1, size: 5.0, grav: 0.7, drag: 0.5, freq: 392 },
+      { t: 1.75, x: 2.4, y: 4.3, z: -6.9, style: 'mum', pal: FW_WINE, n: reduced ? 0 : 96, speed: 2.2, life: 2.5, size: 5.6, drag: 0.55, freq: 293.66 },
+      { t: 2.35, x: -5.0, y: 5.5, z: -7.6, style: 'willow', pal: FW_ROSE, n: reduced ? 0 : 80, speed: 1.5, life: 2.9, size: 4.8, grav: 0.66, freq: 523.25 },
+      { t: 3.05, x: 5.1, y: 6.2, z: -8.3, style: 'mum', pal: FW_VIOLET, n: reduced ? 18 : 100, speed: 2.4, life: 2.7, size: 5.8, drag: 0.5, freq: 349.23 },
+      { t: 3.7, x: -3.4, y: 3.9, z: -6.8, style: 'mum', pal: FW_WINE, n: reduced ? 0 : 88, speed: 2.1, life: 2.5, size: 5.4, drag: 0.55, freq: 440 },
+      { t: 4.4, x: 3.6, y: 6.8, z: -8.6, style: 'willow', pal: FW_ROSE, n: reduced ? 0 : 78, speed: 1.45, life: 3.0, size: 4.8, grav: 0.68, freq: 392 },
+      { t: 5.1, x: -4.6, y: 6.3, z: -8.1, style: 'mum', pal: FW_VIOLET, n: reduced ? 16 : 92, speed: 2.3, life: 2.6, size: 5.6, drag: 0.52, freq: 493.88 },
+      { t: 5.8, x: 4.8, y: 4.5, z: -7.2, style: 'mum', pal: FW_ROSE, n: reduced ? 0 : 84, speed: 2.15, life: 2.5, size: 5.4, drag: 0.55, freq: 349.23 },
+      { t: 6.45, x: -1.8, y: 4.2, z: -6.7, style: 'willow', pal: FW_WINE, n: reduced ? 0 : 72, speed: 1.4, life: 2.8, size: 4.6, grav: 0.64, freq: 440 },
+      { t: 7.1, x: 2.2, y: 5.8, z: -7.9, style: 'mum', pal: FW_VIOLET, n: reduced ? 0 : 80, speed: 2.2, life: 2.5, size: 5.3, drag: 0.52, freq: 523.25 }
     ];
-    shells.forEach(function (s) {
-      if (!s.n) return;
-      fwShell(s, s.pal, s.n, s.speed, s.life, s.size);
-    });
-    const name = { t: reduced ? 0.35 : 1.32, x: 1.55, y: 2.48, z: -6.35, gain: 0.05, freq: 1174.66 };
-    const rise = reduced ? 0.01 : 0.55;
-    fwShell(name, FW_ROSE, reduced ? 10 : 22, 1.05, 1.15, 3.2);
-    fwWord = fwMakeWord(name.x, name.y, name.z, name.t + rise);
-    fwGeo.attributes.color.needsUpdate = true;
-    fwGeo.setDrawRange(0, fwSparks.length);
-  }
-
-  let fwWord = null;
-  function fwMakeWord(x, y, z, born) {
-    const W = 768;
-    const H = 320;
-    const c = document.createElement('canvas');
-    c.width = W;
-    c.height = H;
-    const g = c.getContext('2d');
-    g.clearRect(0, 0, W, H);
-    g.font = fwFace();
-    g.textAlign = 'center';
-    g.textBaseline = 'middle';
-    g.lineJoin = 'round';
-    g.miterLimit = 2;
-    g.lineWidth = 14;
-    g.strokeStyle = 'rgba(42, 8, 20, 0.92)';
-    g.strokeText('Dhea', W / 2, H * 0.58);
-    g.shadowColor = 'rgba(255, 90, 140, 0.9)';
-    g.shadowBlur = 22;
-    g.fillStyle = '#ffc2d2';
-    g.fillText('Dhea', W / 2, H * 0.58);
-    g.shadowBlur = 0;
-    g.fillStyle = '#fff8f6';
-    g.fillText('Dhea', W / 2, H * 0.58);
-    const tex = new THREE.CanvasTexture(c);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    const mat = new THREE.SpriteMaterial({
-      map: tex,
-      transparent: true,
-      depthWrite: false,
-      depthTest: false,
-      opacity: 0,
-      toneMapped: false
-    });
-    const sprite = new THREE.Sprite(mat);
-    sprite.position.set(x, y, z);
-    sprite.scale.set(0.15, 0.06, 1);
-    sprite.renderOrder = 6;
-    sprite.userData = { x: x, y: y, z: z, born: born, sx: 1.62 };
-    wishWorld.add(sprite);
-    return sprite;
-  }
-
-  function fwWordStep(time) {
-    if (!fwWord || fwT < 0) return;
-    const age = fwT - fwWord.userData.born;
-    const gather = reduced ? 0.08 : 0.62;
-    const hold = reduced ? 1.05 : 2.35;
-    const fade = reduced ? 0.55 : 1.25;
-    let o = 0;
-    let s = 0.2;
-    if (age >= 0 && age < gather) {
-      const e = 1 - Math.pow(1 - age / gather, 3);
-      o = e;
-      s = 0.28 + 0.72 * e;
-      fwWord.position.set(fwWord.userData.x, fwWord.userData.y, fwWord.userData.z);
-    } else if (age >= gather && age < gather + hold) {
-      const shim = 0.5 + 0.5 * Math.sin(time * 7.5);
-      o = 0.86 + 0.14 * shim;
-      s = 1;
-      fwWord.position.set(
-        fwWord.userData.x + Math.sin(time * 3.1) * 0.01,
-        fwWord.userData.y + Math.cos(time * 4.4) * 0.012,
-        fwWord.userData.z
-      );
-    } else if (age >= gather + hold) {
-      const f = clamp((age - gather - hold) / fade, 0, 1);
-      o = (1 - f) * (1 - f);
-      s = 1 + f * 0.06;
-      fwWord.position.set(
-        fwWord.userData.x,
-        fwWord.userData.y + f * 0.32,
-        fwWord.userData.z
-      );
-    }
-    fwWord.material.opacity = o;
-    const sx = fwWord.userData.sx * s;
-    fwWord.scale.set(sx, sx * (320 / 768), 1);
+    show.forEach(function (s) { fwShell(s); });
+    fwWriteName(0.05, 6.55, -7.7, reduced ? 0.35 : 2.15);
   }
 
   function fwBegin() {
@@ -2165,7 +2277,7 @@
     fwStarted = true;
     const start = function () {
       fwBuild();
-      fwT = 0;
+      if (fwT < 0) fwT = 0;
     };
     if (document.fonts && document.fonts.load) {
       const done = function () { start(); };
@@ -2174,6 +2286,53 @@
         new Promise(function (r) { setTimeout(r, 450); })
       ]).then(done, done);
     } else start();
+  }
+
+  function fwReset() {
+    fwSparks.length = 0;
+    fwFree.length = 0;
+    fwPops.length = 0;
+    fwT = -1;
+    fwStarted = false;
+    fwBuilt = false;
+    fwEncoreN = 0;
+    for (let i = 0; i < FW_MAX; i++) {
+      fwAlpha[i] = 0;
+      fwSize[i] = 0;
+      fwPos[i * 3 + 1] = -30;
+    }
+    fwGeo.setDrawRange(0, 0);
+    fwGeo.attributes.position.needsUpdate = true;
+    fwGeo.attributes.aAlpha.needsUpdate = true;
+    fwGeo.attributes.aSize.needsUpdate = true;
+    fwGeo.attributes.color.needsUpdate = true;
+  }
+
+  function fwEncore() {
+    if (world !== 'sanctum') return;
+    audio.ensure();
+    if (!fwStarted) fwBegin();
+    const base = fwT < 0 ? 0.15 : fwT + 0.05;
+    fwEncoreN++;
+    const name = fwEncoreN % 3 === 0;
+    const x = (Math.random() * 2 - 1) * 4.4;
+    const y = 4.2 + Math.random() * 2.6;
+    const z = -6.6 - Math.random() * 1.8;
+    const pals = [FW_WINE, FW_ROSE, FW_VIOLET];
+    fwShell({
+      t: base,
+      x: x, y: y, z: z,
+      style: fwEncoreN % 2 === 0 ? 'willow' : 'mum',
+      pal: pals[fwEncoreN % 3],
+      n: reduced ? 24 : (name ? 36 : 80),
+      speed: fwEncoreN % 2 === 0 ? 1.3 : 1.9,
+      life: 2.6,
+      size: name ? 4.2 : 5.2,
+      freq: 349 + (fwEncoreN % 4) * 40,
+      rise: reduced ? 0.01 : 0.85,
+      trails: name ? 6 : 10
+    });
+    if (name) fwWriteName(x, y, z, base + (reduced ? 0.05 : 0.7));
   }
 
   function fwPark(i) {
@@ -2185,7 +2344,11 @@
   function fwStep(dt, time) {
     if (fwT < 0) return;
     fwT += dt;
-    fwWordStep(time);
+    if (fwPops.length > 48) {
+      for (let i = fwPops.length - 1; i >= 0 && fwPops.length > 24; i--) {
+        if (fwPops[i].heard) fwPops.splice(i, 1);
+      }
+    }
     for (let p = 0; p < fwPops.length; p++) {
       const pop = fwPops[p];
       if (!pop.heard && fwT >= pop.at) {
@@ -2195,7 +2358,9 @@
     }
     for (let i = 0; i < fwSparks.length; i++) {
       const s = fwSparks[i];
+      if (s.dead) continue;
       let x = 0, y = -30, z = 0, a = 0, sz = 0;
+      let over = false;
       if (s.kind === 1) {
         const flight = (fwT - s.t0) / s.rise;
         if (flight > s.lag && flight < 1.08) {
@@ -2204,52 +2369,58 @@
           x = s.x0 + (s.x1 - s.x0) * e;
           y = s.y0 + (s.y1 - s.y0) * e;
           z = s.z0 + (s.z1 - s.z0) * e;
-          const head = 1 - s.lag;
-          a = head * Math.sin(clamp(flight, 0, 1) * Math.PI) * 0.8;
-          sz = s.size * (0.7 + head * 0.5);
+          a = (1 - along * 0.55) * Math.sin(clamp(flight, 0, 1) * Math.PI) * 0.75;
+          sz = s.size * (0.65 + (1 - s.lag) * 0.45);
         }
+        over = fwT > s.t0 + s.rise * 1.2;
       } else if (s.kind === 2) {
         const age = fwT - s.birth;
         if (age >= 0 && age <= s.max) {
-          const drag = 1.28;
+          const drag = s.drag || 1.28;
           const k = (1 - Math.exp(-drag * age)) / drag;
+          const grav = s.grav != null ? s.grav : 0.2;
           x = s.x0 + s.vx * k;
-          // y-up: gravity pulls toward -Y
-          y = s.y0 + s.vy * k - 0.2 * age * age;
+          y = s.y0 + s.vy * k - grav * age * age;
           z = s.z0 + s.vz * k;
           const u = age / s.max;
-          const tw = 0.7 + 0.3 * Math.abs(Math.sin(time * 14 + s.seed));
-          a = Math.pow(1 - u, 1.2) * tw;
+          const tw = 0.72 + 0.28 * Math.abs(Math.sin(time * 11 + s.seed));
+          a = Math.pow(1 - u, 1.15) * tw;
           if (age < 0.05) a *= age / 0.05;
           sz = s.size * (1 - u * 0.35);
         }
+        over = age > s.max;
       } else if (s.kind === 3) {
         const age = fwT - s.birth;
         if (age >= 0 && age <= s.max) {
-          const gatherT = reduced ? 0.08 : 0.75;
-          const holdUntil = reduced ? 1.05 : 3.15;
-          const g = easeOut(clamp(age / gatherT, 0, 1));
-          x = s.x0 + (s.x1 - s.x0) * g;
-          y = s.y0 + (s.y1 - s.y0) * g;
-          z = s.z0 + (s.z1 - s.z0) * g;
+          const gatherT = reduced ? 0.08 : 0.9;
+          const holdUntil = reduced ? 1.1 : 3.6;
+          const gth = easeOut(clamp(age / gatherT, 0, 1));
+          x = s.x0 + (s.x1 - s.x0) * gth;
+          y = s.y0 + (s.y1 - s.y0) * gth;
+          z = s.z0 + (s.z1 - s.z0) * gth;
           let fade = 1;
           if (age > holdUntil) {
             const f = (age - holdUntil) / (s.max - holdUntil);
             fade = (1 - f) * (1 - f);
-            y += f * 0.2;
-            x += Math.sin(s.seed * 6.2) * f * 0.05;
-          } else if (g > 0.9) {
-            x += Math.sin(time * 5.5 + s.seed * 17) * 0.0035;
-            y += Math.cos(time * 6.2 + s.seed * 11) * 0.003;
+            y += f * 0.16;
+          } else if (gth > 0.92) {
+            x += Math.sin(time * 4.2 + s.seed * 17) * 0.004;
+            y += Math.cos(time * 5.1 + s.seed * 11) * 0.003;
           }
-          const tw = 0.9 + 0.1 * (0.5 + 0.5 * Math.sin(time * 9 + s.seed * 13));
-          a = tw * fade;
-          if (age < 0.1) a *= age / 0.1;
-          sz = s.size * (1.2 - 0.12 * g);
+          const tw = 0.94 + 0.06 * Math.sin(time * 6 + s.seed * 13);
+          a = Math.min(0.68, tw * fade);
+          if (age < 0.08) a *= age / 0.08;
+          sz = s.size;
         }
+        over = age > s.max;
       }
-      if (a <= 0.001) fwPark(i);
-      else {
+      if (a <= 0.001) {
+        fwPark(i);
+        if (over) {
+          s.dead = true;
+          fwFree.push(i);
+        }
+      } else {
         fwPos[i * 3] = x;
         fwPos[i * 3 + 1] = y;
         fwPos[i * 3 + 2] = z;
@@ -2260,6 +2431,7 @@
     fwGeo.attributes.position.needsUpdate = true;
     fwGeo.attributes.aAlpha.needsUpdate = true;
     fwGeo.attributes.aSize.needsUpdate = true;
+    fwGeo.attributes.color.needsUpdate = true;
   }
 
   const petals = [];
@@ -2316,6 +2488,9 @@
   let world = 'study';
   let batT = -1;
   let celebrated = false;
+  let envYaw = -0.2;
+  let envSpin = 0;
+  let envHeld = false;
   const tmp = new THREE.Vector3();
 
   function setHint(text) {
@@ -2477,6 +2652,13 @@
     });
     // store so the loop can read it
     celebrate.moonTween = moonTween;
+    shot = shots.sky;
+    applyFraming();
+    camAnchor.copy(camera.position);
+    arriveT = 0;
+    arriveDur = reduced ? 0.28 : 2.5;
+    arriving = true;
+    skyBtn.classList.add('show');
     fwBegin();
     setTimeout(function () { afterEl.classList.add('show'); }, reduced ? 200 : 700);
   }
@@ -2518,6 +2700,7 @@
     if (orbitPointers.size >= 2 && phase !== 'reading' && phase !== 'reread') {
       holding = false;
       drag = null;
+      envHeld = false;
       const span = twoPointerSpan();
       orbitDrag = { mode: 'pinch', x: span.x, y: span.y, dist: span.dist };
       return;
@@ -2532,7 +2715,8 @@
         return;
       }
       audio.ensure();
-      drag = { y: p.clientY, x: p.clientX, t: performance.now() };
+      drag = { y: p.clientY, x: p.clientX, t: performance.now(), ang: envScreenAngle(p), lastT: performance.now() };
+      envHeld = true;
       phase = 'dragging';
       try { e.target.setPointerCapture && e.target.setPointerCapture(e.pointerId); } catch (err) {}
     } else if (phase === 'wish') {
@@ -2574,10 +2758,24 @@
       cur.style.top = p.clientY + 'px';
     }
     if (phase === 'dragging' && drag) {
-      const pull = (drag.y - p.clientY) / (viewportBox().h * 0.42);
-      flapState.a = clamp(pull, 0, 1);
-      if (flapState.a > 0.06) crackOnce();
-      setHint(flapState.a > 0.02 ? 'Pull it open' : 'Touch the seal');
+      const dy = drag.y - p.clientY;
+      const dx = p.clientX - drag.x;
+      if (dy > 12 && dy > Math.abs(dx) * 1.05) {
+        const pull = dy / (viewportBox().h * 0.42);
+        flapState.a = clamp(pull, 0, 1);
+        if (flapState.a > 0.06) crackOnce();
+        setHint('Pull it open');
+      }
+      const ang = envScreenAngle(p);
+      let turn = ang - drag.ang;
+      if (turn > Math.PI) turn -= Math.PI * 2;
+      if (turn < -Math.PI) turn += Math.PI * 2;
+      const nowSpin = performance.now();
+      const dtSpin = Math.max(0.016, (nowSpin - drag.lastT) / 1000);
+      envYaw -= turn;
+      envSpin = clamp(-turn / dtSpin, -14, 14);
+      drag.ang = ang;
+      drag.lastT = nowSpin;
     } else if (phase === 'sealed' && fine) {
       pointer.set(ndc.x, ndc.y);
       raycaster.setFromCamera(pointer, camera);
@@ -2594,12 +2792,16 @@
     if (e && e.pointerId != null) orbitPointers.delete(e.pointerId);
     if (orbitPointers.size < 2 && orbitDrag && orbitDrag.mode === 'pinch') orbitDrag = null;
     if (orbitDrag && orbitDrag.mode === 'orbit') orbitDrag = null;
+    envHeld = false;
     if (phase !== 'dragging' || !drag) return;
     const p = eventPoint(e);
     const moved = Math.hypot(p.clientX - drag.x, p.clientY - drag.y);
+    const dy = drag.y - p.clientY;
+    const dx = p.clientX - drag.x;
     const quick = performance.now() - drag.t < 320 && moved < 16;
+    const mostlyUp = dy > 28 && dy > Math.abs(dx) * 1.15;
     drag = null;
-    if (quick || flapState.a > 0.22) openFully();
+    if (quick || (flapState.a > 0.22 && mostlyUp)) openFully();
     else {
       phase = 'sealed';
       tween(flapState, { a: 0 }, 0.45, { ease: easeOut, onDone: function () { setHint('Touch the seal'); } });
@@ -2650,6 +2852,99 @@
     afterEl.classList.remove('show');
     showLetter(true);
   });
+  const skyBtn = $('skybtn');
+  $('restart').addEventListener('click', function (e) {
+    e.stopPropagation();
+    restartPiece();
+  });
+  skyBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    fwEncore();
+  });
+
+  function envScreenAngle(p) {
+    const box = viewportBox();
+    envelope.getWorldPosition(tmp);
+    tmp.project(camera);
+    const cx = box.x + (tmp.x * 0.5 + 0.5) * box.w;
+    const cy = box.y + (-tmp.y * 0.5 + 0.5) * box.h;
+    return Math.atan2(p.clientY - cy, p.clientX - cx);
+  }
+
+  function restartPiece() {
+    jobs.length = 0;
+    phase = 'sealed';
+    world = 'study';
+    celebrated = false;
+    holding = false;
+    blow = 0;
+    extinguished = 0;
+    cracked = false;
+    drag = null;
+    envHeld = false;
+    envYaw = -0.2;
+    envSpin = 0;
+    batT = -1;
+    paperPlayed = false;
+    arriving = false;
+    glowKick = 0;
+    viewOrbit.yaw = 0;
+    viewOrbit.pitch = 0;
+    viewOrbit.dist = 1;
+    flapState.a = 0;
+    seal.scale.set(1, 1, 1);
+    letterMesh.position.set(0, 0.078, 0.02);
+    letterMesh.rotation.set(0, 0, 0);
+    letterMesh.scale.set(1, 1, 1);
+    letterMat.opacity = 1;
+    deskWorld.visible = true;
+    wishWorld.visible = false;
+    studyLightL.intensity = 1.05;
+    studyLightR.intensity = 0.95;
+    cakeLight.intensity = 0;
+    moonLight.intensity = 0;
+    moonLight.color.set(0xb7c7e8);
+    spot.position.set(-0.4, 5.4, 2.5);
+    spot.target.position.set(0, 0, 0);
+    spot.color.set(0xffd0a6);
+    spot.intensity = 2.6;
+    scene.background.set(0x10080c);
+    scene.fog.color.set(0x16090e);
+    scene.fog.density = 0.052;
+    hemi.color.set(0x4a4038);
+    hemi.groundColor.set(0x2a1210);
+    hemi.intensity = 0.22;
+    document.body.classList.remove('sanctum');
+    shot = shots.study;
+    applyFraming();
+    camera.position.copy(framed);
+    look.set(shot.lx, shot.ly, shot.lz);
+    lookSm.copy(look);
+    letterEl.classList.remove('open', 'burn', 'reread');
+    shade.classList.remove('on');
+    wishUI.classList.remove('show');
+    afterEl.classList.remove('show');
+    flash.classList.remove('go');
+    skyBtn.classList.remove('show');
+    ring.style.strokeDashoffset = String(RING);
+    how.textContent = 'Hold to blow out the candles';
+    shards.forEach(function (s) {
+      deskWorld.remove(s);
+      s.geometry.dispose();
+    });
+    shards.length = 0;
+    smokes.forEach(function (s) { wishWorld.remove(s); });
+    smokes.length = 0;
+    bats.forEach(function (b) {
+      b.visible = false;
+      b.position.set(-12, 4.6, -6.5);
+    });
+    celebrate.moonTween = null;
+    fwReset();
+    setHint('Touch the seal');
+    prelude.hidden = true;
+    prelude.classList.add('hide');
+  }
 
   setTimeout(dismissPrelude, reduced ? 500 : 2300);
 
@@ -2664,13 +2959,13 @@
   function applyFraming() {
     const box = viewportBox();
     const aspect = box.w / Math.max(1, box.h);
-    const baseFov = world === 'sanctum' ? 36 : 30;
-    const base = world === 'sanctum' ? shots.sanctum : shots.study;
+    const base = shot;
+    const baseFov = base.fov || (world === 'sanctum' ? 36 : 30);
     const ox = base.x - base.lx;
     const oy = base.y - base.ly;
     const oz = base.z - base.lz;
     const len = Math.hypot(ox, oy, oz) || 1;
-    const wide = world === 'sanctum' ? 1.28 : 1.6;
+    const wide = base.wide || (world === 'sanctum' ? 1.28 : 1.6);
     let fov = baseFov;
     let dist = len;
     if (aspect < 1.5) {
@@ -2681,7 +2976,7 @@
       else {
         fov = cap;
         const tanNow = Math.tan(fov * Math.PI / 360) * Math.max(aspect, 0.38);
-        dist = len * (tanH / tanNow) * (world === 'sanctum' ? 1 : 1.06);
+        dist = len * (tanH / tanNow) * (base.pull != null ? base.pull : (world === 'sanctum' ? 1 : 1.06));
       }
     }
     camera.fov = fov;
@@ -2738,16 +3033,20 @@
     } else {
       camera.position.lerp(desired, 0.055);
     }
-    if (!arriving) lookSm.lerp(look, 0.08);
+    lookSm.lerp(look, arriving ? 0.04 : 0.08);
     camera.lookAt(lookSm);
 
-    if (world === 'study' && (phase === 'sealed' || phase === 'dragging' || phase === 'prelude')) {
-      envelope.rotation.y += (envRest.y + ndc.x * 0.08 - envelope.rotation.y) * 0.05;
+    if (world === 'study') {
+      if (!envHeld) {
+        envSpin *= Math.exp(-dt * 0.62);
+        if (Math.abs(envSpin) < 0.02) envSpin = 0;
+        envYaw += envSpin * dt;
+      }
+      envelope.rotation.y = envYaw;
       envelope.rotation.x += (envRest.x + ndc.y * 0.03 - envelope.rotation.x) * 0.05;
-      envelope.position.y = Math.sin(time * 1.05) * 0.008;
-    } else if (world === 'study') {
-      envelope.rotation.y += (envRest.y - envelope.rotation.y) * 0.05;
-      envelope.rotation.x += (envRest.x - envelope.rotation.x) * 0.05;
+      if (phase === 'sealed' || phase === 'dragging' || phase === 'prelude') {
+        envelope.position.y = Math.sin(time * 1.05) * 0.008;
+      }
     }
 
     if (world === 'study') {
